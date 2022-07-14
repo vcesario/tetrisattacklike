@@ -14,9 +14,8 @@ public class GameManager : MonoBehaviour
     public GameObject examples;
 
     private GridBall[,] grid;
-    public Vector2Int selector_gridPosition;
+    private Vector2Int selector_gridPosition;
     private int selectorOrientation; // 0 = horizontal, 1 = vertical
-
     private bool lockInput;
 
     IEnumerator Start()
@@ -48,6 +47,8 @@ public class GameManager : MonoBehaviour
 
         selector.gameObject.SetActive(true);
         lockInput = false;
+        updateSelectorWorldPosition();
+        updateSelectorWorldRotation();
     }
 
     void Update()
@@ -56,7 +57,6 @@ public class GameManager : MonoBehaviour
             return;
 
         inputs();
-        updateSelectorWorldPosition();
     }
 
     private void spawnBall(float xPos, int gridI, int gridJ)
@@ -93,32 +93,97 @@ public class GameManager : MonoBehaviour
             moveSelectorRight();
             updateSelectorWorldPosition();
         }
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            changeSelectorOrientation();
+            updateSelectorWorldPosition();
+            updateSelectorWorldRotation();
+        }
     }
 
     private void moveSelectorUp()
     {
         selector_gridPosition.y++;
 
-        if (selector_gridPosition.y >= gridSize.y) selector_gridPosition.y = 0;
+        if (selectorOrientation == 0)
+        {
+            if (selector_gridPosition.y >= gridSize.y)
+            {
+                selector_gridPosition.y = 0;
+            }
+        }
+        else
+        {
+            if (selector_gridPosition.y >= gridSize.y - 1)
+            {
+                selector_gridPosition.y = 0;
+            }
+        }
     }
     private void moveSelectorDown()
     {
         selector_gridPosition.y--;
 
-        if (selector_gridPosition.y < 0) selector_gridPosition.y = (int)gridSize.y - 1;
+        if (selectorOrientation == 0)
+        {
+            if (selector_gridPosition.y < 0) selector_gridPosition.y = (int)gridSize.y - 1;
+        }
+        else
+        {
+            if (selector_gridPosition.y < 0) selector_gridPosition.y = (int)gridSize.y - 2;
+        }
     }
     private void moveSelectorLeft()
     {
         selector_gridPosition.x--;
 
-        if (selector_gridPosition.x < 0) selector_gridPosition.x = (int)gridSize.x - 2;
+        if (selectorOrientation == 0)
+        {
+            if (selector_gridPosition.x < 0) selector_gridPosition.x = (int)gridSize.x - 2;
+        }
+        else
+        {
+            if (selector_gridPosition.x < 0) selector_gridPosition.x = (int)gridSize.x - 1;
+        }
     }
     private void moveSelectorRight()
     {
         selector_gridPosition.x++;
 
         // se estiver no sentido horizontal, o selector nao pode ficar na ultima coluna pois ele ja considera a bola a direita
-        if (selector_gridPosition.x >= (int)gridSize.x - 1) selector_gridPosition.x = 0;
+        if (selectorOrientation == 0)
+        {
+            if (selector_gridPosition.x >= (int)gridSize.x - 1) selector_gridPosition.x = 0;
+        }
+        else
+        {
+            if (selector_gridPosition.x >= (int)gridSize.x) selector_gridPosition.x = 0;
+        }
+    }
+
+    private void changeSelectorOrientation()
+    {
+        if (selectorOrientation == 0)
+            selectorOrientation = 1;
+        else
+            selectorOrientation = 0;
+
+        // corrigir posição atual. por ex: se eu estou na vertical, na ultima coluna, e mudo para orient. horizontal, preciso corrigir a coluna selecionada pra uma antes
+        if (selectorOrientation == 0 && selector_gridPosition.x == gridSize.x - 1)
+        {
+            selector_gridPosition.x--;
+        }
+        else if (selectorOrientation == 1 && selector_gridPosition.y == gridSize.y - 1)
+        {
+            selector_gridPosition.y--;
+        }
+    }
+    private void updateSelectorWorldRotation()
+    {
+        if (selectorOrientation == 0)
+            selector.localRotation = Quaternion.identity;
+        else
+            selector.localRotation = Quaternion.Euler(0, 0, 90);
     }
 
     private void updateSelectorWorldPosition()
@@ -127,9 +192,19 @@ public class GameManager : MonoBehaviour
         Vector3 selectedBall_worldPosition = selectedBall.transform.position;
 
         // para casos horizontais, a posicao do seletor sera a media entre a bola selecionada e a bola a direita
-        GridBall rightBall = grid[selector_gridPosition.x + 1, selector_gridPosition.y];
-        Vector3 rightBall_worldPosition = rightBall.transform.position;
+        if (selectorOrientation == 0)
+        {
+            GridBall rightBall = grid[selector_gridPosition.x + 1, selector_gridPosition.y];
+            Vector3 rightBall_worldPosition = rightBall.transform.position;
 
-        selector.transform.position = (selectedBall_worldPosition + rightBall_worldPosition) / 2;
+            selector.transform.position = (selectedBall_worldPosition + rightBall_worldPosition) / 2;
+        }
+        else // para casos verticais, e a media entre a selecionada e a de cima
+        {
+            GridBall topBall = grid[selector_gridPosition.x, selector_gridPosition.y + 1];
+            Vector3 topBall_worldPosition = topBall.transform.position;
+
+            selector.transform.position = (selectedBall_worldPosition + topBall_worldPosition) / 2;
+        }
     }
 }
