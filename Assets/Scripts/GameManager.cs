@@ -99,6 +99,10 @@ public class GameManager : MonoBehaviour
             updateSelectorWorldPosition();
             updateSelectorWorldRotation();
         }
+        else if (Input.GetKeyDown(KeyCode.Return))
+        {
+            swapBalls();
+        }
     }
 
     private void moveSelectorUp()
@@ -206,5 +210,61 @@ public class GameManager : MonoBehaviour
 
             selector.transform.position = (selectedBall_worldPosition + topBall_worldPosition) / 2;
         }
+    }
+
+    // trocar bolas de posicao
+
+    private void swapBalls()
+    {
+        StartCoroutine(_swapBalls());
+    }
+
+    private IEnumerator _swapBalls()
+    {
+        lockInput = true;
+
+        // travar todas as fisicas para nao acontecer acidentes
+        foreach (var ball in grid)
+            ball.thisRigidbody.isKinematic = true;
+
+        // determino quais sao as duas bolas a serem trocadas
+        GridBall ballA = grid[selector_gridPosition.x, selector_gridPosition.y];
+        GridBall ballB;
+
+        Vector2Int ballB_gridPosition;
+        if (selectorOrientation == 0)
+            ballB_gridPosition = new Vector2Int(selector_gridPosition.x +1 , selector_gridPosition.y);
+        else
+            ballB_gridPosition = new Vector2Int(selector_gridPosition.x, selector_gridPosition.y + 1);
+        ballB = grid[ballB_gridPosition.x, ballB_gridPosition.y];
+
+        // calculo para qual posicao elas vao
+        Vector3 aOrigin = ballA.transform.position;
+        Vector3 bOrigin = ballB.transform.position;
+        Vector3 aDest = ballB.transform.position;
+        Vector3 bDest = ballA.transform.position;
+
+        // realizo a troca logica
+        grid[selector_gridPosition.x, selector_gridPosition.y] = ballB;
+        grid[ballB_gridPosition.x, ballB_gridPosition.y] = ballA;
+
+        // realizo a troca de posicao
+        float swapDuration = .18f;
+        float swapElapsed = 0;
+        while (swapElapsed < swapDuration)
+        {
+            swapElapsed += Time.deltaTime;
+            ballA.transform.position = Vector3.Lerp(aOrigin, aDest, swapElapsed / swapDuration);
+            ballB.transform.position = Vector3.Lerp(bOrigin, bDest, swapElapsed / swapDuration);
+            yield return 0;
+        }
+        ballA.transform.position = aDest;
+        ballB.transform.position = bDest;
+
+        // destravar fisicas
+        foreach (var ball in grid)
+            ball.thisRigidbody.isKinematic = false;
+
+        lockInput = false;
     }
 }
