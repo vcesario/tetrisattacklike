@@ -33,16 +33,15 @@ public class GameManager : MonoBehaviour
         inputs();
     }
 
-    private void spawnBall(float xPos, int gridI, int gridJ)
+    private GridBall spawnBall(float xPos, int ballType)
     {
         GameObject newBallObject = Instantiate(ballPrefab, Vector3.up * 10 + Vector3.right * xPos, Quaternion.identity, gridParent);
         GridBall newBall = newBallObject.GetComponent<GridBall>();
         Renderer newRenderer = newBall.GetComponent<Renderer>();
 
-        int materialIndex = Random.Range(0, ballMaterials.Count);
-        newRenderer.sharedMaterial = ballMaterials[materialIndex];
-
-        grid[gridI, gridJ] = new GridCell(newBall, materialIndex);
+        newRenderer.sharedMaterial = ballMaterials[ballType];
+        
+        return newBall;
     }
 
     private void inputs()
@@ -273,7 +272,6 @@ public class GameManager : MonoBehaviour
 
         initializeGrid();
 
-
         for (int j = 0; j < gridSize.y; j++)
         {
             for (int i = 0; i < gridSize.x; i++)
@@ -286,7 +284,7 @@ public class GameManager : MonoBehaviour
                     lerpBounds = Mathf.Floor(gridSize.x / 2f) * gridSize.z;
                 float posX = Mathf.Lerp(-lerpBounds, lerpBounds, i / (gridSize.x - 1));
 
-                spawnBall(posX, i, j);
+                grid[i,j].ball = spawnBall(posX, grid[i,j].ballType);
 
                 yield return new WaitForSeconds(.1f);
             }
@@ -301,5 +299,119 @@ public class GameManager : MonoBehaviour
     private void initializeGrid()
     {
         grid = new GridCell[(int)gridSize.x, (int)gridSize.y];
+
+        for (int j = 0; j < gridSize.y; j++)
+        {
+            for (int i = 0; i < gridSize.x; i++)
+            {
+                GridCell newCell = new GridCell();
+                grid[i, j] = newCell;
+
+                // checo quais tipos podem ser inicializados naquela celula
+
+                // 1. atribuo a celula com um tipo aleatorio, excluindo os de tentativas passadas
+                List<int> allTypes = new List<int>();
+                for (int k = 0; k < ballMaterials.Count; k++)
+                    allTypes.Add(k);
+                List<int> exclude = new List<int>();
+                List<GridMatch> matches;
+
+                do
+                {
+                    List<int> typesToChose = allTypes.FindAll(_t => !exclude.Contains(_t));
+                    int pickedType = typesToChose[Random.Range(0, typesToChose.Count)];
+                    newCell.ballType = pickedType;
+
+                    // 2. verifico se apos essa atribuicao, o grid possui matches para tratar
+                    matches = getMatchesAtCoord(i, j);
+
+                    // 3. se possuir matches, adiciono o tipo para lista de excludes e tento de novo
+                    if (matches.Count > 0)
+                        exclude.Add(pickedType);
+                } while (matches.Count > 0);
+
+                // se nao houver matches naquela posicao com aquele tipo, assumo que encontrei o tipo certo e passo para o proximo
+            }
+        }
+    }
+
+    // checa se existem 3 ou mais bolas do mesmo tipo em sequencia naquela coordenada do grid
+    private List<GridMatch> getMatchesAtCoord(int pickedCol, int pickedRow)
+    {
+        List<GridMatch> allMatches = new List<GridMatch>();
+
+        int previousType = -1;
+        int startCol = -1;
+        int matchCount = -1;
+
+        for (int col = 0; col < gridSize.x; col++)
+        {
+            if (grid[col, pickedRow] == null)
+            {
+                // se celula nao tiver inicializada, pula para proxima (faz nada)
+            }
+            else if (grid[col, pickedRow].ballType == previousType)
+            {
+                // se tipo da bola atual for igual ao anterior, incremento o tamanho do combo
+                matchCount++;
+            }
+            else
+            {
+                // se encontrar um tipo diferente do que estava antes, verifica se ja estava contando um match valido ate agora. se sim, adiciona na lista
+                if (matchCount >= 3)
+                    allMatches.Add(new GridMatch(startCol, pickedRow, matchCount, 0));
+
+                // reseta variaveis para comecar a contar um novo match
+                previousType = grid[col, pickedRow].ballType;
+                startCol = col;
+                matchCount = 1;
+            }
+        }
+        // se chegar ao final com match valido, adicionar tambem
+        if (matchCount >= 3)
+            allMatches.Add(new GridMatch(startCol, pickedRow, matchCount, 0));
+
+
+        // faco a mesma coisa, porem agora na vertical
+        int startRow = -1;
+        previousType = -1;
+        for (int row = 0; row < gridSize.y; row++)
+        {
+            if (grid[pickedCol, row] == null)
+            {
+            }
+            else if (grid[pickedCol, row].ballType == previousType)
+            {
+                matchCount++;
+            }
+            else
+            {
+                if (matchCount >= 3)
+                    allMatches.Add(new GridMatch(pickedCol, startRow, matchCount, 1));
+
+                previousType = grid[pickedCol, row].ballType;
+                startRow = row;
+                matchCount = 1;
+            }
+        }
+        if (matchCount >= 3)
+            allMatches.Add(new GridMatch(pickedCol, startRow, matchCount, 1));
+
+
+        return allMatches;
+    }
+}
+
+public class GridMatch
+{
+    public Vector2Int origin;
+    public int size;
+    public int orientation;
+
+    public GridMatch(int i, int j, int _size, int _orientation)
+    {
+        origin = new Vector2Int(i, j);
+        size = _size;
+        orientation = _orientation;
     }
 }

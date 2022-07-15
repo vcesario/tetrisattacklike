@@ -12,10 +12,9 @@ public class GridCell
     public GridBall ball;
     public int ballType;
 
-    public GridCell(GridBall _ball, int _type)
+    public GridCell()
     {
-        ball = _ball;
-        ballType = _type;
+        
     }
 }
 
