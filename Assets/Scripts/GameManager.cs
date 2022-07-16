@@ -127,57 +127,52 @@ public class GameManager : MonoBehaviour
 
         for (int col = 0; col < gridSize.x; col++)
         {
-            if (grid[col, pickedRow] == null)
+            // se encontrar celula nula, ou encontrar um tipo diferente, finalizar match
+            if (grid[col, pickedRow] == null || grid[col, pickedRow].ballType != previousType)
             {
-                // se celula nao tiver inicializada, pula para proxima (faz nada)
-            }
-            else if (grid[col, pickedRow].ballType == previousType)
-            {
-                // se tipo da bola atual for igual ao anterior, incremento o tamanho do combo
-                matchCount++;
-            }
-            else
-            {
-                // se encontrar um tipo diferente do que estava antes, verifica se ja estava contando um match valido ate agora. se sim, adiciona na lista
+                // verifica se ja estava contando um match valido ate agora. se sim, adiciona na lista
                 if (matchCount >= 3)
                     allMatches.Add(new GridMatch(startCol, pickedRow, matchCount, 0));
 
                 // reseta variaveis para comecar a contar um novo match
-                previousType = grid[col, pickedRow].ballType;
-                startCol = col;
+                previousType = grid[col, pickedRow] == null ? -1 : grid[col, pickedRow].ballType;
+                startCol = grid[col, pickedRow] == null ? -1 : col;
                 matchCount = 1;
             }
+            else // se tipo da bola atual for igual a anterior
+            {
+                // incremento o tamanho do combo
+                matchCount++;
+            }
         }
+
         // se chegar ao final com match valido, adicionar tambem
         if (matchCount >= 3)
             allMatches.Add(new GridMatch(startCol, pickedRow, matchCount, 0));
 
-
         // faco a mesma coisa, porem agora na vertical
         int startRow = -1;
         previousType = -1;
+        matchCount = -1;
+
         for (int row = 0; row < gridSize.y; row++)
         {
-            if (grid[pickedCol, row] == null)
-            {
-            }
-            else if (grid[pickedCol, row].ballType == previousType)
-            {
-                matchCount++;
-            }
-            else
+            if (grid[pickedCol, row] == null || grid[pickedCol, row].ballType != previousType)
             {
                 if (matchCount >= 3)
                     allMatches.Add(new GridMatch(pickedCol, startRow, matchCount, 1));
 
-                previousType = grid[pickedCol, row].ballType;
-                startRow = row;
+                previousType = grid[pickedCol, row] == null ? -1 : grid[pickedCol, row].ballType;
+                startRow = grid[pickedCol, row] == null ? -1 : row;
                 matchCount = 1;
+            }
+            else
+            {
+                matchCount++;
             }
         }
         if (matchCount >= 3)
             allMatches.Add(new GridMatch(pickedCol, startRow, matchCount, 1));
-
 
         return allMatches;
     }
@@ -363,7 +358,11 @@ public class GameManager : MonoBehaviour
 
         // travar todas as fisicas para nao acontecer acidentes
         foreach (var cell in grid)
+        {
+            if (cell == null)
+                continue;
             cell.ball.thisRigidbody.isKinematic = true;
+        }
 
         // determino quais sao as duas bolas a serem trocadas
         GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];
@@ -399,11 +398,65 @@ public class GameManager : MonoBehaviour
         cellA.ball.transform.position = aDest;
         cellB.ball.transform.position = bDest;
 
+        // verificar novos matches nas posicoes trocadas
+        List<GridMatch> matches = new List<GridMatch>();
+        matches.AddRange(getMatchesAtCoord(selector_gridPosition.x, selector_gridPosition.y));
+        matches.AddRange(getMatchesAtCoord(ballB_gridPosition.x, ballB_gridPosition.y));
+
+        // marca todas as celulas encontradas nos matches para serem removidas
+        HashSet<Vector2Int> matchedCoords = new HashSet<Vector2Int>();
+        foreach (var match in matches)
+            getCoordsFromMatch(match, matchedCoords);
+        // remove todas as celulas (deixando buracos no grid)
+        foreach (var coord in matchedCoords)
+        {
+            GridCell removedCell = grid[coord.x, coord.y];
+            grid[coord.x, coord.y] = null;
+            Destroy(removedCell.ball.gameObject);
+        }
+        // preenche os buracos no grid com as celulas de cima
+        for (int col = 0; col < gridSize.x; col++)
+        {
+            for (int row = 0; row < gridSize.y - 1; row++)
+            {
+                if (grid[col, row] == null)
+                {
+                    for (int k = row + 1; k < gridSize.y; k++)
+                    {
+                        if (grid[col, k] != null)
+                        {
+                            grid[col, row] = grid[col, k];
+                            grid[col, k] = null;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         // destravar fisicas
         foreach (var cell in grid)
+        {
+            if (cell == null)
+                continue;
             cell.ball.thisRigidbody.isKinematic = false;
+        }
 
         lockInput = false;
+    }
+
+    private void getCoordsFromMatch(GridMatch match, HashSet<Vector2Int> matchedCoords)
+    {
+        for (int k = 0; k < match.size; k++)
+        {
+            Vector2Int coord = match.origin;
+            if (match.orientation == 0)
+                coord.x += k;
+            else
+                coord.y += k;
+
+            matchedCoords.Add(coord);
+        }
     }
 }
 
@@ -418,5 +471,10 @@ public class GridMatch
         origin = new Vector2Int(i, j);
         size = _size;
         orientation = _orientation;
+    }
+
+    public override string ToString()
+    {
+        return origin.ToString() + ", " + size + ", " + (orientation == 0 ? "Horizontal" : "Vertical");
     }
 }
