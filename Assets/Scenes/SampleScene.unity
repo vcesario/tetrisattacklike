@@ -566,7 +566,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &832575518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -998,7 +998,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1208394941}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 11.95, y: 0, z: 0.75}
+  m_LocalPosition: {x: 6.06, y: 0, z: 0.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1281,7 +1281,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 512aeb6196044d94bb70325e03b1814b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 6, y: 5, z: 1.1}
+  gridSize: {x: 6, y: 5}
+  xSpacing: 1.1
+  ySpacing: 0
+  yOffset: -0.61
   gridParent: {fileID: 1449744429}
   selector: {fileID: 1255968003}
   ballPrefab: {fileID: 1208394941}
