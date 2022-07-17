@@ -5,6 +5,8 @@ using UnityEngine;
 public class GridBall : MonoBehaviour
 {
     public Rigidbody thisRigidbody;
+
+    public GameObject textPause;
 }
 
 public class GridCell

@@ -307,7 +307,6 @@ public class GameManager : MonoBehaviour
             selector_gridPosition.y--;
         }
     }
-    
 
     private void updateSelectorGraphics()
     {
@@ -362,7 +361,7 @@ public class GameManager : MonoBehaviour
     {
         GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];
 
-        if (cellA == null)
+        if (cellA == null || cellA.ball == null || ballsCurrentlyAnimating.Contains(cellA.ball))
             return false;
 
         GridCell cellB;
@@ -374,7 +373,7 @@ public class GameManager : MonoBehaviour
             ballB_gridPosition = new Vector2Int(selector_gridPosition.x, selector_gridPosition.y + 1);
         cellB = grid[ballB_gridPosition.x, ballB_gridPosition.y];
 
-        if (cellB == null)
+        if (cellB == null || cellB.ball == null || ballsCurrentlyAnimating.Contains(cellB.ball))
             return false;
 
         return true;
@@ -494,6 +493,45 @@ public class GameManager : MonoBehaviour
      * se elas nao estiverem se movimentando, pode interagir com elas
      * se elas estavam se movimentando, e acabaram de terminar seu movimento, verificar se parou em uma combinacao
      */
+    private List<GridBall> ballsCurrentlyAnimating = new List<GridBall>();
+    private void FixedUpdate()
+    {
+        bool ballChangedState = false;
+        for (int col = 0; col < gridSize.x; col++)
+        {
+            for (int row = 0; row < gridSize.y; row++)
+            {
+                if (grid[col, row] == null || grid[col, row].ball == null)
+                    continue;
+
+                if (grid[col, row].ball.thisRigidbody.velocity.sqrMagnitude > .001f)
+                {
+                    if (!ballsCurrentlyAnimating.Contains(grid[col, row].ball))
+                    {
+                        ballsCurrentlyAnimating.Add(grid[col, row].ball);
+                        if (!grid[col, row].ball.textPause.activeSelf)
+                            grid[col, row].ball.textPause.SetActive(true);
+
+                        ballChangedState = true;
+                    }
+                }
+                else
+                {
+                    if (ballsCurrentlyAnimating.Contains(grid[col, row].ball))
+                    {
+                        ballsCurrentlyAnimating.Remove(grid[col, row].ball);
+                        if (grid[col, row].ball.textPause.activeSelf)
+                            grid[col, row].ball.textPause.SetActive(false);
+
+                        ballChangedState = true;
+                    }
+                }
+            }
+        }
+
+        if (ballChangedState)
+            updateSelectorGraphics();
+    }
 }
 
 public class GridMatch
