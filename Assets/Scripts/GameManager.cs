@@ -129,8 +129,10 @@ public class GameManager : MonoBehaviour
 
         for (int col = 0; col < gridSize.x; col++)
         {
-            // se encontrar celula nula, ou encontrar um tipo diferente, finalizar match
-            if (grid[col, pickedRow] == null || grid[col, pickedRow].ballType != previousType)
+            // finalizar match se: encontrar celula nula, ou encontrar um tipo diferente, ou bola estiver animando
+            if (grid[col, pickedRow] == null
+                || grid[col, pickedRow].ballType != previousType
+                || ballsCurrentlyAnimating.Contains(grid[col, pickedRow].ball))
             {
                 // verifica se ja estava contando um match valido ate agora. se sim, adiciona na lista
                 if (matchCount >= 3)
@@ -159,7 +161,9 @@ public class GameManager : MonoBehaviour
 
         for (int row = 0; row < gridSize.y; row++)
         {
-            if (grid[pickedCol, row] == null || grid[pickedCol, row].ballType != previousType)
+            if (grid[pickedCol, row] == null
+                || grid[pickedCol, row].ballType != previousType
+                || ballsCurrentlyAnimating.Contains(grid[pickedCol, row].ball))
             {
                 if (matchCount >= 3)
                     allMatches.Add(new GridMatch(pickedCol, startRow, matchCount, 1));
@@ -425,15 +429,36 @@ public class GameManager : MonoBehaviour
         cellA.ball.transform.position = aDest;
         cellB.ball.transform.position = bDest;
 
+        // caso haja um match, removo as bolas correspondentes a ele
+        removeMatchesAtCoords(selector_gridPosition, ballB_gridPosition);
+
+        // destravar fisicas
+        foreach (var cell in grid)
+        {
+            if (cell == null)
+                continue;
+            cell.ball.thisRigidbody.isKinematic = false;
+        }
+
+        lockInput = false;
+        updateSelectorGraphics();
+    }
+
+    private void removeMatchesAtCoords(params Vector2Int[] coords)
+    {
         // verificar novos matches nas posicoes trocadas
         List<GridMatch> matches = new List<GridMatch>();
-        matches.AddRange(getMatchesAtCoord(selector_gridPosition.x, selector_gridPosition.y));
-        matches.AddRange(getMatchesAtCoord(ballB_gridPosition.x, ballB_gridPosition.y));
+        foreach (var coord in coords)
+            matches.AddRange(getMatchesAtCoord(coord.x, coord.y));
+
+        if (matches.Count == 0)
+            return;
 
         // marca todas as celulas encontradas nos matches para serem removidas
         HashSet<Vector2Int> matchedCoords = new HashSet<Vector2Int>();
         foreach (var match in matches)
             getCoordsFromMatch(match, matchedCoords);
+
         // remove todas as celulas (deixando buracos no grid)
         foreach (var coord in matchedCoords)
         {
@@ -441,6 +466,7 @@ public class GameManager : MonoBehaviour
             grid[coord.x, coord.y] = null;
             Destroy(removedCell.ball.gameObject);
         }
+
         // preenche os buracos no grid com as celulas de cima
         for (int col = 0; col < gridSize.x; col++)
         {
@@ -460,17 +486,6 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-
-        // destravar fisicas
-        foreach (var cell in grid)
-        {
-            if (cell == null)
-                continue;
-            cell.ball.thisRigidbody.isKinematic = false;
-        }
-
-        lockInput = false;
-        updateSelectorGraphics();
     }
 
     private void getCoordsFromMatch(GridMatch match, HashSet<Vector2Int> matchedCoords)
@@ -522,6 +537,8 @@ public class GameManager : MonoBehaviour
                         ballsCurrentlyAnimating.Remove(grid[col, row].ball);
                         if (grid[col, row].ball.textPause.activeSelf)
                             grid[col, row].ball.textPause.SetActive(false);
+
+                        removeMatchesAtCoords(new Vector2Int(col, row));
 
                         ballChangedState = true;
                     }
