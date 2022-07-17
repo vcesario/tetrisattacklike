@@ -1281,12 +1281,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 512aeb6196044d94bb70325e03b1814b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 5, y: 4}
+  gridSize: {x: 8, y: 8}
   xSpacing: 1.1
   ySpacing: 0
   yOffset: -0.61
   gridParent: {fileID: 1449744429}
   selector: {fileID: 1255968003}
+  selectorRenderer: {fileID: 1255968001}
+  colorSelectorEnabled: {r: 1, g: 1, b: 1, a: 0.2627451}
+  colorSelectorDisabled: {r: 1, g: 1, b: 1, a: 0.039215688}
   ballPrefab: {fileID: 1208394941}
   ballMaterials:
   - {fileID: 2100000, guid: 3c94a3da265db4f45bc3b1ca8385d87e, type: 2}

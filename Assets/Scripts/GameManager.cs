@@ -7,7 +7,10 @@ public class GameManager : MonoBehaviour
     public Vector2Int gridSize;
     public float xSpacing, ySpacing, yOffset;
     public Transform gridParent;
+    [Space]
     public Transform selector;
+    public Renderer selectorRenderer;
+    public Color colorSelectorEnabled, colorSelectorDisabled;
     [Space]
     public GameObject ballPrefab;
     public List<Material> ballMaterials = new List<Material>();
@@ -73,8 +76,7 @@ public class GameManager : MonoBehaviour
 
         selector.gameObject.SetActive(true);
         lockInput = false;
-        updateSelectorWorldPosition();
-        updateSelectorWorldRotation();
+        updateSelectorGraphics();
     }
 
     private void initializeGrid()
@@ -196,32 +198,31 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.W))
         {
             moveSelectorUp();
-            updateSelectorWorldPosition();
+            updateSelectorGraphics();
         }
         else if (Input.GetKeyDown(KeyCode.A))
         {
             moveSelectorLeft();
-            updateSelectorWorldPosition();
+            updateSelectorGraphics();
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
             moveSelectorDown();
-            updateSelectorWorldPosition();
+            updateSelectorGraphics();
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
             moveSelectorRight();
-            updateSelectorWorldPosition();
+            updateSelectorGraphics();
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {
             changeSelectorOrientation();
-            updateSelectorWorldPosition();
-            updateSelectorWorldRotation();
+            updateSelectorGraphics();
         }
         else if (Input.GetKeyDown(KeyCode.Return))
         {
-            swapBalls();
+            trySwapBalls();
         }
         else if (Input.GetKeyDown(KeyCode.R))
         {
@@ -306,16 +307,11 @@ public class GameManager : MonoBehaviour
             selector_gridPosition.y--;
         }
     }
-    private void updateSelectorWorldRotation()
-    {
-        if (selectorOrientation == 0)
-            selector.localRotation = Quaternion.identity;
-        else
-            selector.localRotation = Quaternion.Euler(0, 0, 90);
-    }
+    
 
-    private void updateSelectorWorldPosition()
+    private void updateSelectorGraphics()
     {
+        // atualiza position
         Vector3 selectedCell_worldPosition = gridToWorldPosition(selector_gridPosition.x, selector_gridPosition.y);
 
         // para casos horizontais, a posicao do seletor sera a media entre a bola selecionada e a bola a direita
@@ -329,6 +325,15 @@ public class GameManager : MonoBehaviour
             Vector3 topCell_worldPosition = gridToWorldPosition(selector_gridPosition.x, selector_gridPosition.y + 1);
             selector.position = (selectedCell_worldPosition + topCell_worldPosition) / 2f;
         }
+
+        // atualiza rotation
+        if (selectorOrientation == 0)
+            selector.localRotation = Quaternion.identity;
+        else
+            selector.localRotation = Quaternion.Euler(0, 0, 90);
+
+        // atualiza estado do seletor
+        selectorRenderer.sharedMaterial.color = areSelectedBallsSwappable() ? colorSelectorEnabled : colorSelectorDisabled;
     }
 
     private Vector3 gridToWorldPosition(float gridX, float gridY)
@@ -347,9 +352,32 @@ public class GameManager : MonoBehaviour
     }
 
     // trocar bolas de posicao
-    private void swapBalls()
+    private void trySwapBalls()
     {
-        StartCoroutine(_swapBalls());
+        if (areSelectedBallsSwappable())
+            StartCoroutine(_swapBalls());
+    }
+
+    private bool areSelectedBallsSwappable()
+    {
+        GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];
+
+        if (cellA == null)
+            return false;
+
+        GridCell cellB;
+
+        Vector2Int ballB_gridPosition;
+        if (selectorOrientation == 0)
+            ballB_gridPosition = new Vector2Int(selector_gridPosition.x + 1, selector_gridPosition.y);
+        else
+            ballB_gridPosition = new Vector2Int(selector_gridPosition.x, selector_gridPosition.y + 1);
+        cellB = grid[ballB_gridPosition.x, ballB_gridPosition.y];
+
+        if (cellB == null)
+            return false;
+
+        return true;
     }
 
     private IEnumerator _swapBalls()
@@ -443,6 +471,7 @@ public class GameManager : MonoBehaviour
         }
 
         lockInput = false;
+        updateSelectorGraphics();
     }
 
     private void getCoordsFromMatch(GridMatch match, HashSet<Vector2Int> matchedCoords)
@@ -458,6 +487,13 @@ public class GameManager : MonoBehaviour
             matchedCoords.Add(coord);
         }
     }
+
+    /*
+     * um for que vai checando todas as bolas, todos os frames, pra ver se elas estao se movimentando ou nao
+     * se elas estiverem se movimentando, nao pode interagir com elas. muda a cor do seletor pra quando tiver nelas
+     * se elas nao estiverem se movimentando, pode interagir com elas
+     * se elas estavam se movimentando, e acabaram de terminar seu movimento, verificar se parou em uma combinacao
+     */
 }
 
 public class GridMatch
