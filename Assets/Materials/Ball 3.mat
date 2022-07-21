@@ -8,8 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Ball 3
-  m_Shader: {fileID: -6465566751694194690, guid: d18dc8d74a8038f4c8d782c7a0e7c3b0,
-    type: 3}
+  m_Shader: {fileID: 4800000, guid: 6d5240a7186eb94419c59e4c5a1e29cb, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -90,6 +89,7 @@ Material:
     - Normal_Blend: 0.5
     - _AlphaClip: 0
     - _Blend: 0
+    - _Brightness: 0.206
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
@@ -112,8 +112,11 @@ Material:
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _RampFactor: 0.272
+    - _RampOffset: 0
+    - _RampSmoothness: 0
     - _ReceiveShadows: 1
-    - _Scale: 0.75
+    - _Scale: 0.884
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -126,6 +129,7 @@ Material:
     - _BaseColor: {r: 0.1348741, g: 1, b: 0, a: 1}
     - _Color: {r: 0.13487408, g: 1, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _RampTinting: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &7249027047746433788

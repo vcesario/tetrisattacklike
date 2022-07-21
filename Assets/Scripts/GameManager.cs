@@ -14,7 +14,9 @@ public class GameManager : MonoBehaviour
     [Space]
     public GameObject ballPrefab;
     public Material outlineMat;
-    public List<Material> ballMaterials = new List<Material>();
+    public Material ballMat;
+    public List<Color> ballColors = new List<Color>();
+    //public List<Material> ballMaterials = new List<Material>();
     [Space]
     public GameObject examples;
 
@@ -95,7 +97,7 @@ public class GameManager : MonoBehaviour
 
                 // 1. atribuo a celula com um tipo aleatorio, excluindo os de tentativas passadas
                 List<int> allTypes = new List<int>();
-                for (int k = 0; k < ballMaterials.Count; k++)
+                for (int k = 0; k < ballColors.Count; k++)
                     allTypes.Add(k);
                 List<int> exclude = new List<int>();
                 List<GridMatch> matches;
@@ -193,8 +195,9 @@ public class GameManager : MonoBehaviour
         newRenderer.sharedMaterials = new Material[]
         {
             outlineMat,
-            ballMaterials[ballType]
+            ballMat
         };
+        newRenderer.materials[1].SetColor("_Color", ballColors[ballType]);
 
         return newBall;
     }
