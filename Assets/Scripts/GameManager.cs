@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     public Color colorSelectorEnabled, colorSelectorDisabled;
     [Space]
     public GameObject ballPrefab;
+    public Material outlineMat;
     public List<Material> ballMaterials = new List<Material>();
     [Space]
     public GameObject examples;
@@ -189,7 +190,11 @@ public class GameManager : MonoBehaviour
         GridBall newBall = newBallObject.GetComponent<GridBall>();
         Renderer newRenderer = newBall.GetComponent<Renderer>();
 
-        newRenderer.sharedMaterial = ballMaterials[ballType];
+        newRenderer.sharedMaterials = new Material[]
+        {
+            outlineMat,
+            ballMaterials[ballType]
+        };
 
         return newBall;
     }

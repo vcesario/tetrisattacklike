@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.2532195, g: 0.71740484, b: 0.26470825, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -159,7 +159,7 @@ Camera:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.69803923, g: 0.9212041, b: 0.94509804, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -552,6 +552,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
+  - {fileID: 2100000, guid: da7036193b99ee34fae749c305bafd3e, type: 2}
   - {fileID: 2100000, guid: eacab4f9b215cb64aae24a7606646fab, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -598,7 +599,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &832575518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1497,6 +1498,7 @@ MonoBehaviour:
   colorSelectorEnabled: {r: 1, g: 1, b: 1, a: 0.2627451}
   colorSelectorDisabled: {r: 1, g: 1, b: 1, a: 0.039215688}
   ballPrefab: {fileID: 1208394941}
+  outlineMat: {fileID: 2100000, guid: da7036193b99ee34fae749c305bafd3e, type: 2}
   ballMaterials:
   - {fileID: 2100000, guid: 3c94a3da265db4f45bc3b1ca8385d87e, type: 2}
   - {fileID: 2100000, guid: 7ebb75ecb7d550c4b8762ec0ef70b5ba, type: 2}
