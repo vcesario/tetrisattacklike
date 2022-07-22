@@ -1397,6 +1397,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thisRigidbody: {fileID: 1208394942}
   textPause: {fileID: 340607204}
+  animateCooldown: 0
+  type: 0
 --- !u!1 &1245420996
 GameObject:
   m_ObjectHideFlags: 0
@@ -1671,7 +1673,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridSize: {x: 5, y: 4}
   xSpacing: 1.1
-  ySpacing: 0
+  ySpacing: 1
   yOffset: -0.61
   gridParent: {fileID: 1449744429}
   selector: {fileID: 1255968003}

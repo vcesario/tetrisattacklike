@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviour
                 allBalls.Add(spawnBall(worldPos.x, grid[i, j].ballType));
 
                 // espera por X frames
-                for (int f = 0; f < 4; f++)
+                for (int f = 0; f < 10; f++)
                     yield return 0;
             }
         }
@@ -127,8 +127,7 @@ public class GameManager : MonoBehaviour
         {
             // finalizar match se: encontrar celula nula, ou encontrar um tipo diferente, ou bola estiver animando
             if (grid[col, pickedRow] == null
-                || grid[col, pickedRow].ballType != previousType
-                || ballsCurrentlyAnimating.Contains(grid[col, pickedRow].ball))
+                || grid[col, pickedRow].ballType != previousType)
             {
                 // verifica se ja estava contando um match valido ate agora. se sim, adiciona na lista
                 if (matchCount >= 3)
@@ -158,8 +157,7 @@ public class GameManager : MonoBehaviour
         for (int row = 0; row < gridSize.y; row++)
         {
             if (grid[pickedCol, row] == null
-                || grid[pickedCol, row].ballType != previousType
-                || ballsCurrentlyAnimating.Contains(grid[pickedCol, row].ball))
+                || grid[pickedCol, row].ballType != previousType)
             {
                 if (matchCount >= 3)
                     allMatches.Add(new GridMatch(pickedCol, startRow, matchCount, 1));
@@ -191,6 +189,8 @@ public class GameManager : MonoBehaviour
             ballMat
         };
         newRenderer.materials[1].SetColor("_Color", ballColors[ballType]);
+
+        newBall.type = ballType;
 
         return newBall;
     }
@@ -350,7 +350,7 @@ public class GameManager : MonoBehaviour
             lerpBounds = Mathf.Floor(gridSize.x / 2f) * xSpacing;
         float posX = Mathf.Lerp(-lerpBounds, lerpBounds, gridX / (gridSize.x - 1));
 
-        float posY = gridY + ySpacing * gridY + yOffset;
+        float posY = ySpacing * gridY + yOffset;
 
         return new Vector3(posX, posY, 0);
     }
@@ -359,43 +359,45 @@ public class GameManager : MonoBehaviour
     private void trySwapBalls()
     {
         //if (areSelectedBallsSwappable())
-        StartCoroutine(_swapBalls2());
+        StartCoroutine(_swapBalls());
     }
 
     private bool areSelectedBallsSwappable()
     {
-        GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];
+        Debug.Log("refazer habilitancia do selector");
+        //GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];
 
-        if (cellA == null || cellA.ball == null || ballsCurrentlyAnimating.Contains(cellA.ball))
-            return false;
+        //if (cellA == null || cellA.ball == null || ballsCurrentlyAnimating.Contains(cellA.ball))
+        //    return false;
 
-        GridCell cellB;
+        //GridCell cellB;
 
-        Vector2Int ballB_gridPosition;
-        if (selectorOrientation == 0)
-            ballB_gridPosition = new Vector2Int(selector_gridPosition.x + 1, selector_gridPosition.y);
-        else
-            ballB_gridPosition = new Vector2Int(selector_gridPosition.x, selector_gridPosition.y + 1);
-        cellB = grid[ballB_gridPosition.x, ballB_gridPosition.y];
+        //Vector2Int ballB_gridPosition;
+        //if (selectorOrientation == 0)
+        //    ballB_gridPosition = new Vector2Int(selector_gridPosition.x + 1, selector_gridPosition.y);
+        //else
+        //    ballB_gridPosition = new Vector2Int(selector_gridPosition.x, selector_gridPosition.y + 1);
+        //cellB = grid[ballB_gridPosition.x, ballB_gridPosition.y];
 
-        if (cellB == null || cellB.ball == null || ballsCurrentlyAnimating.Contains(cellB.ball))
-            return false;
+        //if (cellB == null || cellB.ball == null || ballsCurrentlyAnimating.Contains(cellB.ball))
+        //    return false;
 
         return true;
     }
 
-    private IEnumerator _swapBalls2()
+    private IEnumerator _swapBalls()
     {
         // determino quais sao as bolas a serem trocadas, vendo quais estao na posicao em que o selector esta
         Vector3 ballA_worldPos = gridToWorldPosition(selector_gridPosition.x, selector_gridPosition.y);
         Vector3 ballB_worldPos = gridToWorldPosition(selector_gridPosition.x + 1, selector_gridPosition.y);
+        float triggerDetectSize = .25f;
 
-        Collider[] ballsInside = Physics.OverlapBox(ballA_worldPos, Vector3.one * .25f);
+        Collider[] ballsInside = Physics.OverlapSphere(ballA_worldPos, triggerDetectSize);
         Collider ballACollider = ballsInside.Length > 0 ? ballsInside[0] : null;
         GridBall ballA = ballACollider != null ? ballACollider.GetComponentInParent<GridBall>() : null;
 
         // faco a mesma coisa, agora para a bola 'oposta'
-        ballsInside = Physics.OverlapBox(ballB_worldPos, Vector3.one * .25f);
+        ballsInside = Physics.OverlapSphere(ballB_worldPos, triggerDetectSize);
         Collider ballBCollider = ballsInside.Length > 0 ? ballsInside[0] : null;
         GridBall ballB = ballBCollider != null ? ballBCollider.GetComponentInParent<GridBall>() : null;
 
@@ -424,7 +426,6 @@ public class GameManager : MonoBehaviour
         float swapDuration = .15f;
         float swapElapsed = 0;
 
-
         while (swapElapsed < swapDuration)
         {
             swapElapsed += Time.deltaTime;
@@ -441,6 +442,8 @@ public class GameManager : MonoBehaviour
 
             ballA.thisRigidbody.isKinematic = false;
             ballACollider.isTrigger = false;
+
+            findPhysicsMatches(aDest);
         }
         if (ballB != null)
         {
@@ -448,6 +451,8 @@ public class GameManager : MonoBehaviour
 
             ballB.thisRigidbody.isKinematic = false;
             ballBCollider.isTrigger = false;
+
+            findPhysicsMatches(bDest);
         }
     }
 
@@ -455,7 +460,6 @@ public class GameManager : MonoBehaviour
      * um for que vai checando todas as bolas, todos os frames, pra ver se elas estao se movimentando ou nao
      * se elas estavam se movimentando, e acabaram de terminar seu movimento, verificar se parou em uma combinacao
      */
-    private List<GridBall> ballsCurrentlyAnimating = new List<GridBall>();
     private void FixedUpdate()
     {
         bool ballChangedState = false;
@@ -475,11 +479,7 @@ public class GameManager : MonoBehaviour
                     ballChangedState = true;
                 }
 
-                allBalls[k].animateCooldown = 1f;
-                //if (!ballsCurrentlyAnimating.Contains(allBalls[k]))
-                //{
-                //    ballsCurrentlyAnimating.Add(allBalls[k]);
-                //}
+                allBalls[k].animateCooldown = .25f;
             }
             else
             {
@@ -491,28 +491,169 @@ public class GameManager : MonoBehaviour
                         if (allBalls[k].textPause.activeSelf)
                             allBalls[k].textPause.SetActive(false);
 
-                        //removeMatchesAtCoords(new Vector2Int(col, row));
-
                         ballChangedState = true;
+
+                        findPhysicsMatches(allBalls[k].transform.position);
                     }
-
                 }
-                //if (ballsCurrentlyAnimating.Contains(allBalls[k]))
-                //{
-                //    ballsCurrentlyAnimating.Remove(allBalls[k]);
-                //    if (allBalls[k].textPause.activeSelf)
-                //        allBalls[k].textPause.SetActive(false);
-
-                //    //removeMatchesAtCoords(new Vector2Int(col, row));
-
-                //    ballChangedState = true;
-                //}
             }
-
         }
 
         if (ballChangedState)
             updateSelectorGraphics();
+    }
+
+    private void findPhysicsMatches(Vector3 center)
+    {
+        // detecto a bola central e seu tipo, pra saber qual e o tipo do match que estou procurando
+        float triggerDetectSize = .25f;
+        Collider[] ballsInside = new Collider[1];
+        if (Physics.OverlapSphereNonAlloc(center, triggerDetectSize, ballsInside) <= 0)
+            return;
+        Collider ballCollider = ballsInside.Length > 0 ? ballsInside[0] : null;
+        GridBall centerBall = ballCollider != null ? ballCollider.GetComponentInParent<GridBall>() : null;
+        int matchType = centerBall.type;
+
+        // olho para as bolas em linha reta acima, ate encontrar uma quebra na sequencia
+        List<GridBall> matchedBallsAbove = new List<GridBall>();
+        int count = 1;
+        do
+        {
+            Vector3 abovePos = center + Vector3.up * ySpacing * count;
+            if (Physics.OverlapSphereNonAlloc(abovePos, triggerDetectSize, ballsInside) <= 0)
+            {
+                count = 0;
+            }
+            else
+            {
+                Collider aboveColl = ballsInside[0];
+                GridBall aboveBall = aboveColl.GetComponentInParent<GridBall>();
+                if (aboveBall.type == matchType && aboveBall.thisRigidbody.isKinematic == false)
+                {
+                    matchedBallsAbove.Add(aboveBall);
+                    count++;
+                }
+                else
+                {
+                    count = 0;
+                }
+            }
+        } while (count > 0);
+
+        // repito o mesmo, para as outras 3 direcoes
+        List<GridBall> matchedBallsBelow = new List<GridBall>();
+        count = 1;
+        do
+        {
+            Vector3 belowPos = center + Vector3.down * ySpacing * count;
+
+            if (Physics.OverlapSphereNonAlloc(belowPos, triggerDetectSize, ballsInside) <= 0)
+            {
+                count = 0;
+            }
+            else
+            {
+                Collider belowColl = ballsInside[0];
+                GridBall belowBall = belowColl.GetComponentInParent<GridBall>();
+                if (belowBall.type == matchType && belowBall.thisRigidbody.isKinematic == false)
+                {
+                    matchedBallsBelow.Add(belowBall);
+                    count++;
+                }
+                else
+                {
+                    count = 0;
+                }
+            }
+        } while (count > 0);
+
+        List<GridBall> matchedBallsRight = new List<GridBall>();
+        count = 1;
+        do
+        {
+            Vector3 rightPos = center + Vector3.right * xSpacing * count;
+            if (Physics.OverlapSphereNonAlloc(rightPos, triggerDetectSize, ballsInside) <= 0)
+            {
+                count = 0;
+            }
+            else
+            {
+                Collider rightColl = ballsInside[0];
+                GridBall rightBall = rightColl.GetComponentInParent<GridBall>();
+                if (rightBall.type == matchType && rightBall.thisRigidbody.isKinematic == false)
+                {
+                    matchedBallsRight.Add(rightBall);
+                    count++;
+                }
+                else
+                {
+                    count = 0;
+                }
+            }
+        } while (count > 0);
+
+        List<GridBall> matchedBallsLeft = new List<GridBall>();
+        count = 1;
+        do
+        {
+            Vector3 leftPos = center + Vector3.left * xSpacing * count;
+            if (Physics.OverlapSphereNonAlloc(leftPos, triggerDetectSize, ballsInside) <= 0)
+            {
+                count = 0;
+            }
+            else
+            {
+                Collider leftColl = ballsInside[0];
+                GridBall leftBall = leftColl.GetComponentInParent<GridBall>();
+                if (leftBall.type == matchType && leftBall.thisRigidbody.isKinematic == false)
+                {
+                    matchedBallsLeft.Add(leftBall);
+                    count++;
+                }
+                else
+                {
+                    count = 0;
+                }
+            }
+        } while (count > 0);
+
+        // por hora, removo todas as bolas
+        bool removeVertical = matchedBallsAbove.Count + matchedBallsBelow.Count + 1 >= 3;
+        bool removeHorizontal = matchedBallsLeft.Count + matchedBallsRight.Count + 1 >= 3;
+
+        if (removeVertical)
+        {
+            for (int k = 0; k < matchedBallsAbove.Count; k++)
+            {
+                allBalls.Remove(matchedBallsAbove[k]);
+                Destroy(matchedBallsAbove[k].gameObject);
+            }
+            for (int k = 0; k < matchedBallsBelow.Count; k++)
+            {
+                allBalls.Remove(matchedBallsBelow[k]);
+                Destroy(matchedBallsBelow[k].gameObject);
+            }
+        }
+
+        if (removeHorizontal)
+        {
+            for (int k = 0; k < matchedBallsLeft.Count; k++)
+            {
+                allBalls.Remove(matchedBallsLeft[k]);
+                Destroy(matchedBallsLeft[k].gameObject);
+            }
+            for (int k = 0; k < matchedBallsRight.Count; k++)
+            {
+                allBalls.Remove(matchedBallsRight[k]);
+                Destroy(matchedBallsRight[k].gameObject);
+            }
+        }
+
+        if (removeVertical || removeHorizontal)
+        {
+            allBalls.Remove(centerBall);
+            Destroy(centerBall.gameObject);
+        }
     }
 }
 

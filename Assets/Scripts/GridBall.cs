@@ -9,6 +9,8 @@ public class GridBall : MonoBehaviour
     public GameObject textPause;
 
     public float animateCooldown;
+
+    public int type;
 }
 
 public class GridCell
