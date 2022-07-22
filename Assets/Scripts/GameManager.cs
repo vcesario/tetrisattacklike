@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public Vector2Int gridSize;
+    public int yLimit = 10;
     public float xSpacing, ySpacing, yOffset;
     public Transform gridParent;
     [Space]
@@ -278,16 +279,16 @@ public class GameManager : MonoBehaviour
 
         if (selectorOrientation == 0)
         {
-            if (selector_gridPosition.y >= gridSize.y)
+            if (selector_gridPosition.y > yLimit)
             {
-                selector_gridPosition.y = 0;
+                selector_gridPosition.y = yLimit;
             }
         }
         else
         {
-            if (selector_gridPosition.y >= gridSize.y - 1)
+            if (selector_gridPosition.y > yLimit - 1)
             {
-                selector_gridPosition.y = 0;
+                selector_gridPosition.y = yLimit - 1;
             }
         }
     }
@@ -295,27 +296,13 @@ public class GameManager : MonoBehaviour
     {
         selector_gridPosition.y--;
 
-        if (selectorOrientation == 0)
-        {
-            if (selector_gridPosition.y < 0) selector_gridPosition.y = (int)gridSize.y - 1;
-        }
-        else
-        {
-            if (selector_gridPosition.y < 0) selector_gridPosition.y = (int)gridSize.y - 2;
-        }
+        if (selector_gridPosition.y < 0) selector_gridPosition.y = 0;
     }
     private void moveSelectorLeft()
     {
         selector_gridPosition.x--;
 
-        if (selectorOrientation == 0)
-        {
-            if (selector_gridPosition.x < 0) selector_gridPosition.x = (int)gridSize.x - 2;
-        }
-        else
-        {
-            if (selector_gridPosition.x < 0) selector_gridPosition.x = (int)gridSize.x - 1;
-        }
+        if (selector_gridPosition.x < 0) selector_gridPosition.x = 0;
     }
     private void moveSelectorRight()
     {
@@ -324,11 +311,11 @@ public class GameManager : MonoBehaviour
         // se estiver no sentido horizontal, o selector nao pode ficar na ultima coluna pois ele ja considera a bola a direita
         if (selectorOrientation == 0)
         {
-            if (selector_gridPosition.x >= (int)gridSize.x - 1) selector_gridPosition.x = 0;
+            if (selector_gridPosition.x > gridSize.x - 2) selector_gridPosition.x = gridSize.x - 2;
         }
         else
         {
-            if (selector_gridPosition.x >= (int)gridSize.x) selector_gridPosition.x = 0;
+            if (selector_gridPosition.x > gridSize.x - 1) selector_gridPosition.x = gridSize.x - 1;
         }
     }
 
@@ -508,7 +495,7 @@ public class GameManager : MonoBehaviour
         }
 
         float col_worldX = gridToWorldPosition(refillCol, 0).x;
-        spawnBall(col_worldX, Random.Range(0, ballColors.Count));
+        allBalls.Add(spawnBall(col_worldX, Random.Range(0, ballColors.Count)));
 
         refillCooldownElapsed = 0;
         refillCol = (refillCol + 1) % gridSize.x;
