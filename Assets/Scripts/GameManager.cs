@@ -42,24 +42,8 @@ public class GameManager : MonoBehaviour
     private void resetGrid()
     {
         // deletar grid anterior, se houver
-        //if (grid != null)
-        //{
-        //    for (int j = 0; j < gridSize.y; j++)
-        //    {
-        //        for (int i = 0; i < gridSize.x; i++)
-        //        {
-        //            if (grid[i, j] != null)
-        //            {
-        //                Destroy(grid[i, j].ball.gameObject);
-        //                grid[i, j] = null;
-        //            }
-        //        }
-        //    }
-        //}
-
         for (int k = 0; k < allBalls.Count; k++)
             Destroy(allBalls[k].gameObject);
-
         allBalls.Clear();
 
         StartCoroutine(_spawnNewGrid());
@@ -80,8 +64,9 @@ public class GameManager : MonoBehaviour
 
                 allBalls.Add(spawnBall(worldPos.x, grid[i, j].ballType));
 
-                yield return 0;
-                yield return 0;
+                // espera por X frames
+                for (int f = 0; f < 4; f++)
+                    yield return 0;
             }
         }
 
@@ -374,7 +359,7 @@ public class GameManager : MonoBehaviour
     private void trySwapBalls()
     {
         //if (areSelectedBallsSwappable())
-            StartCoroutine(_swapBalls2());
+        StartCoroutine(_swapBalls2());
     }
 
     private bool areSelectedBallsSwappable()
@@ -397,67 +382,6 @@ public class GameManager : MonoBehaviour
             return false;
 
         return true;
-    }
-
-    private IEnumerator _swapBalls()
-    {
-        lockInput = true;
-
-        // travar todas as fisicas para nao acontecer acidentes
-        foreach (var cell in grid)
-        {
-            if (cell == null)
-                continue;
-            cell.ball.thisRigidbody.isKinematic = true;
-        }
-
-        // determino quais sao as duas bolas a serem trocadas
-        GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];
-        GridCell cellB;
-
-        Vector2Int ballB_gridPosition;
-        if (selectorOrientation == 0)
-            ballB_gridPosition = new Vector2Int(selector_gridPosition.x + 1, selector_gridPosition.y);
-        else
-            ballB_gridPosition = new Vector2Int(selector_gridPosition.x, selector_gridPosition.y + 1);
-        cellB = grid[ballB_gridPosition.x, ballB_gridPosition.y];
-
-        // calculo para qual posicao elas vao
-        Vector3 aOrigin = cellA.ball.transform.position;
-        Vector3 bOrigin = cellB.ball.transform.position;
-        Vector3 aDest = cellB.ball.transform.position;
-        Vector3 bDest = cellA.ball.transform.position;
-
-        // realizo a troca logica
-        grid[selector_gridPosition.x, selector_gridPosition.y] = cellB;
-        grid[ballB_gridPosition.x, ballB_gridPosition.y] = cellA;
-
-        // realizo a troca de posicao
-        float swapDuration = .18f;
-        float swapElapsed = 0;
-        while (swapElapsed < swapDuration)
-        {
-            swapElapsed += Time.deltaTime;
-            cellA.ball.transform.position = Vector3.Lerp(aOrigin, aDest, swapElapsed / swapDuration);
-            cellB.ball.transform.position = Vector3.Lerp(bOrigin, bDest, swapElapsed / swapDuration);
-            yield return 0;
-        }
-        cellA.ball.transform.position = aDest;
-        cellB.ball.transform.position = bDest;
-
-        // caso haja um match, removo as bolas correspondentes a ele
-        //removeMatchesAtCoords(selector_gridPosition, ballB_gridPosition);
-
-        // destravar fisicas
-        foreach (var cell in grid)
-        {
-            if (cell == null)
-                continue;
-            cell.ball.thisRigidbody.isKinematic = false;
-        }
-
-        lockInput = false;
-        updateSelectorGraphics();
     }
 
     private IEnumerator _swapBalls2()
@@ -527,107 +451,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //private void removeMatchesAtCoords(params Vector2Int[] coords)
-    //{
-    //    // verificar novos matches nas posicoes trocadas
-    //    List<GridMatch> matches = new List<GridMatch>();
-    //    foreach (var coord in coords)
-    //        matches.AddRange(getMatchesAtCoord(coord.x, coord.y));
-
-    //    if (matches.Count == 0)
-    //        return;
-
-    //    // marca todas as celulas encontradas nos matches para serem removidas
-    //    HashSet<Vector2Int> matchedCoords = new HashSet<Vector2Int>();
-    //    foreach (var match in matches)
-    //        getCoordsFromMatch(match, matchedCoords);
-
-    //    // remove todas as celulas (deixando buracos no grid)
-    //    foreach (var coord in matchedCoords)
-    //    {
-    //        GridCell removedCell = grid[coord.x, coord.y];
-    //        grid[coord.x, coord.y] = null;
-    //        Destroy(removedCell.ball.gameObject);
-    //    }
-
-    //    // preenche os buracos no grid com as celulas de cima
-    //    for (int col = 0; col < gridSize.x; col++)
-    //    {
-    //        for (int row = 0; row < gridSize.y - 1; row++)
-    //        {
-    //            if (grid[col, row] == null)
-    //            {
-    //                for (int k = row + 1; k < gridSize.y; k++)
-    //                {
-    //                    if (grid[col, k] != null)
-    //                    {
-    //                        grid[col, row] = grid[col, k];
-    //                        grid[col, k] = null;
-    //                        break;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
-
-    //private void getCoordsFromMatch(GridMatch match, HashSet<Vector2Int> matchedCoords)
-    //{
-    //    for (int k = 0; k < match.size; k++)
-    //    {
-    //        Vector2Int coord = match.origin;
-    //        if (match.orientation == 0)
-    //            coord.x += k;
-    //        else
-    //            coord.y += k;
-
-    //        matchedCoords.Add(coord);
-    //    }
-    //}
-
     /*
      * um for que vai checando todas as bolas, todos os frames, pra ver se elas estao se movimentando ou nao
-     * se elas estiverem se movimentando, nao pode interagir com elas. muda a cor do seletor pra quando tiver nelas
-     * se elas nao estiverem se movimentando, pode interagir com elas
      * se elas estavam se movimentando, e acabaram de terminar seu movimento, verificar se parou em uma combinacao
      */
     private List<GridBall> ballsCurrentlyAnimating = new List<GridBall>();
     private void FixedUpdate()
     {
         bool ballChangedState = false;
-        //for (int col = 0; col < gridSize.x; col++)
-        //{
-        //    for (int row = 0; row < gridSize.y; row++)
-        //    {
-        //        if (grid[col, row] == null || grid[col, row].ball == null)
-        //            continue;
-
-        //        if (grid[col, row].ball.thisRigidbody.velocity.sqrMagnitude > .001f)
-        //        {
-        //            if (!ballsCurrentlyAnimating.Contains(grid[col, row].ball))
-        //            {
-        //                ballsCurrentlyAnimating.Add(grid[col, row].ball);
-        //                if (!grid[col, row].ball.textPause.activeSelf)
-        //                    grid[col, row].ball.textPause.SetActive(true);
-
-        //                ballChangedState = true;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            if (ballsCurrentlyAnimating.Contains(grid[col, row].ball))
-        //            {
-        //                ballsCurrentlyAnimating.Remove(grid[col, row].ball);
-        //                if (grid[col, row].ball.textPause.activeSelf)
-        //                    grid[col, row].ball.textPause.SetActive(false);
-
-        //                removeMatchesAtCoords(new Vector2Int(col, row));
-
-        //                ballChangedState = true;
-        //            }
-        //        }
-        //    }
-        //}
 
         for (int k = 0; k < allBalls.Count; k++)
         {
@@ -636,27 +467,46 @@ public class GameManager : MonoBehaviour
 
             if (allBalls[k].thisRigidbody.velocity.sqrMagnitude > .001f)
             {
-                if (!ballsCurrentlyAnimating.Contains(allBalls[k]))
+                if (allBalls[k].animateCooldown <= 0f) // se acabou de comecar a animar
                 {
-                    ballsCurrentlyAnimating.Add(allBalls[k]);
                     if (!allBalls[k].textPause.activeSelf)
                         allBalls[k].textPause.SetActive(true);
 
                     ballChangedState = true;
                 }
+
+                allBalls[k].animateCooldown = 1f;
+                //if (!ballsCurrentlyAnimating.Contains(allBalls[k]))
+                //{
+                //    ballsCurrentlyAnimating.Add(allBalls[k]);
+                //}
             }
             else
             {
-                if (ballsCurrentlyAnimating.Contains(allBalls[k]))
+                if (allBalls[k].animateCooldown > 0f)
                 {
-                    ballsCurrentlyAnimating.Remove(allBalls[k]);
-                    if (allBalls[k].textPause.activeSelf)
-                        allBalls[k].textPause.SetActive(false);
+                    allBalls[k].animateCooldown -= Time.deltaTime;
+                    if (allBalls[k].animateCooldown <= 0f) // se acabou de parar
+                    {
+                        if (allBalls[k].textPause.activeSelf)
+                            allBalls[k].textPause.SetActive(false);
 
-                    //removeMatchesAtCoords(new Vector2Int(col, row));
+                        //removeMatchesAtCoords(new Vector2Int(col, row));
 
-                    ballChangedState = true;
+                        ballChangedState = true;
+                    }
+
                 }
+                //if (ballsCurrentlyAnimating.Contains(allBalls[k]))
+                //{
+                //    ballsCurrentlyAnimating.Remove(allBalls[k]);
+                //    if (allBalls[k].textPause.activeSelf)
+                //        allBalls[k].textPause.SetActive(false);
+
+                //    //removeMatchesAtCoords(new Vector2Int(col, row));
+
+                //    ballChangedState = true;
+                //}
             }
 
         }
