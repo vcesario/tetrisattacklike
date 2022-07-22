@@ -176,7 +176,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -201,7 +201,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   m_LocalRotation: {x: -0.21643952, y: 0, z: 0, w: 0.97629607}
-  m_LocalPosition: {x: 0, y: -3, z: -10}
+  m_LocalPosition: {x: 0, y: -1.57, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -719,7 +719,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1018895862
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1669,12 +1669,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 512aeb6196044d94bb70325e03b1814b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 7, y: 7}
+  gridSize: {x: 5, y: 4}
   xSpacing: 1.1
   ySpacing: 0
   yOffset: -0.61
   gridParent: {fileID: 1449744429}
   selector: {fileID: 1255968003}
+  selectorTrigger: {fileID: 0}
   selectorRenderer: {fileID: 1255968001}
   colorSelectorEnabled: {r: 1, g: 1, b: 1, a: 0.2627451}
   colorSelectorDisabled: {r: 1, g: 1, b: 1, a: 0.039215688}
