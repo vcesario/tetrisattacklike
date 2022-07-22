@@ -25,8 +25,9 @@ public class GameManager : MonoBehaviour
     private List<GridBall> allBalls = new List<GridBall>();
     private Vector2Int selector_gridPosition;
     private int selectorOrientation; // 0 = horizontal, 1 = vertical
-    private bool lockInput;
+    private bool isInitializing;
 
+    #region Callbacks da Unity
     private void Start()
     {
         examples.SetActive(false);
@@ -34,11 +35,63 @@ public class GameManager : MonoBehaviour
         resetGrid();
     }
 
-    void Update()
+    private void Update()
     {
         inputs();
+
+        ballRefill();
     }
 
+
+    /*
+     * um for que vai checando todas as bolas, todos os frames, pra ver se elas estao se movimentando ou nao
+     * se elas estavam se movimentando, e acabaram de terminar seu movimento, verificar se parou em uma combinacao
+     */
+    private void FixedUpdate()
+    {
+        bool ballChangedState = false;
+
+        for (int k = 0; k < allBalls.Count; k++)
+        {
+            if (allBalls[k] == null)
+                continue;
+
+            if (allBalls[k].thisRigidbody.velocity.sqrMagnitude > .001f)
+            {
+                if (allBalls[k].animateCooldown <= 0f) // se acabou de comecar a animar
+                {
+                    if (!allBalls[k].textPause.activeSelf)
+                        allBalls[k].textPause.SetActive(true);
+
+                    ballChangedState = true;
+                }
+
+                allBalls[k].animateCooldown = .25f;
+            }
+            else
+            {
+                if (allBalls[k].animateCooldown > 0f)
+                {
+                    allBalls[k].animateCooldown -= Time.deltaTime;
+                    if (allBalls[k].animateCooldown <= 0f) // se acabou de parar
+                    {
+                        if (allBalls[k].textPause.activeSelf)
+                            allBalls[k].textPause.SetActive(false);
+
+                        ballChangedState = true;
+
+                        findPhysicsMatches(allBalls[k].transform.position);
+                    }
+                }
+            }
+        }
+
+        if (ballChangedState)
+            updateSelectorGraphics();
+    }
+    #endregion
+
+    #region Initialization
     private void resetGrid()
     {
         // deletar grid anterior, se houver
@@ -51,7 +104,7 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator _spawnNewGrid()
     {
-        lockInput = true;
+        isInitializing = true;
         selector.gameObject.SetActive(false);
 
         initializeGrid();
@@ -71,7 +124,7 @@ public class GameManager : MonoBehaviour
         }
 
         selector.gameObject.SetActive(true);
-        lockInput = false;
+        isInitializing = false;
         updateSelectorGraphics();
     }
 
@@ -176,28 +229,12 @@ public class GameManager : MonoBehaviour
 
         return allMatches;
     }
+    #endregion
 
-    private GridBall spawnBall(float xPos, int ballType)
-    {
-        GameObject newBallObject = Instantiate(ballPrefab, Vector3.up * 10 + Vector3.right * xPos, Quaternion.identity, gridParent);
-        GridBall newBall = newBallObject.GetComponent<GridBall>();
-        Renderer newRenderer = newBall.GetComponent<Renderer>();
-
-        newRenderer.sharedMaterials = new Material[]
-        {
-            outlineMat,
-            ballMat
-        };
-        newRenderer.materials[1].SetColor("_Color", ballColors[ballType]);
-
-        newBall.type = ballType;
-
-        return newBall;
-    }
-
+    #region Inputs
     private void inputs()
     {
-        if (lockInput)
+        if (isInitializing)
             return;
 
         if (Input.GetKeyDown(KeyCode.W))
@@ -340,21 +377,6 @@ public class GameManager : MonoBehaviour
         selectorRenderer.sharedMaterial.color = areSelectedBallsSwappable() ? colorSelectorEnabled : colorSelectorDisabled;
     }
 
-    private Vector3 gridToWorldPosition(float gridX, float gridY)
-    {
-        // calcular posX de forma centralizada, caso seja par ou impar
-        float lerpBounds = 0;
-        if (gridSize.x % 2 == 0) // se par
-            lerpBounds = xSpacing / 2f + ((gridSize.x / 2f) - 1) * xSpacing;
-        else // se impar
-            lerpBounds = Mathf.Floor(gridSize.x / 2f) * xSpacing;
-        float posX = Mathf.Lerp(-lerpBounds, lerpBounds, gridX / (gridSize.x - 1));
-
-        float posY = ySpacing * gridY + yOffset;
-
-        return new Vector3(posX, posY, 0);
-    }
-
     // trocar bolas de posicao
     private void trySwapBalls()
     {
@@ -455,57 +477,80 @@ public class GameManager : MonoBehaviour
             findPhysicsMatches(bDest);
         }
     }
+    #endregion
 
-    /*
-     * um for que vai checando todas as bolas, todos os frames, pra ver se elas estao se movimentando ou nao
-     * se elas estavam se movimentando, e acabaram de terminar seu movimento, verificar se parou em uma combinacao
-     */
-    private void FixedUpdate()
+    #region Refill
+    public float refillCountdown = 3;
+    private float refillCountdownElapsed = 0;
+    public float refillCooldown = 1;
+    private float refillCooldownElapsed = 0;
+    private int refillCol = 0;
+    private void ballRefill()
     {
-        bool ballChangedState = false;
-
-        for (int k = 0; k < allBalls.Count; k++)
+        if (isInitializing)
         {
-            if (allBalls[k] == null)
-                continue;
-
-            if (allBalls[k].thisRigidbody.velocity.sqrMagnitude > .001f)
-            {
-                if (allBalls[k].animateCooldown <= 0f) // se acabou de comecar a animar
-                {
-                    if (!allBalls[k].textPause.activeSelf)
-                        allBalls[k].textPause.SetActive(true);
-
-                    ballChangedState = true;
-                }
-
-                allBalls[k].animateCooldown = .25f;
-            }
-            else
-            {
-                if (allBalls[k].animateCooldown > 0f)
-                {
-                    allBalls[k].animateCooldown -= Time.deltaTime;
-                    if (allBalls[k].animateCooldown <= 0f) // se acabou de parar
-                    {
-                        if (allBalls[k].textPause.activeSelf)
-                            allBalls[k].textPause.SetActive(false);
-
-                        ballChangedState = true;
-
-                        findPhysicsMatches(allBalls[k].transform.position);
-                    }
-                }
-            }
+            refillCountdownElapsed = 0;
+            refillCooldownElapsed = 0;
+            refillCol = 0;
+            return;
         }
 
-        if (ballChangedState)
-            updateSelectorGraphics();
+        if (refillCountdownElapsed < refillCountdown)
+        {
+            refillCountdownElapsed += Time.deltaTime;
+            return;
+        }
+
+        if (refillCooldownElapsed < refillCooldown)
+        {
+            refillCooldownElapsed += Time.deltaTime;
+            return;
+        }
+
+        float col_worldX = gridToWorldPosition(refillCol, 0).x;
+        spawnBall(col_worldX, Random.Range(0, ballColors.Count));
+
+        refillCooldownElapsed = 0;
+        refillCol = (refillCol + 1) % gridSize.x;
+    }
+    #endregion
+
+    private GridBall spawnBall(float xPos, int ballType)
+    {
+        GameObject newBallObject = Instantiate(ballPrefab, Vector3.up * 10 + Vector3.right * xPos, Quaternion.identity, gridParent);
+        GridBall newBall = newBallObject.GetComponent<GridBall>();
+        Renderer newRenderer = newBall.GetComponent<Renderer>();
+
+        newRenderer.sharedMaterials = new Material[]
+        {
+            outlineMat,
+            ballMat
+        };
+        newRenderer.materials[1].SetColor("_Color", ballColors[ballType]);
+
+        newBall.type = ballType;
+
+        return newBall;
+    }
+
+    private Vector3 gridToWorldPosition(float gridX, float gridY)
+    {
+        // calcular posX de forma centralizada, caso seja par ou impar
+        float lerpBounds = 0;
+        if (gridSize.x % 2 == 0) // se par
+            lerpBounds = xSpacing / 2f + ((gridSize.x / 2f) - 1) * xSpacing;
+        else // se impar
+            lerpBounds = Mathf.Floor(gridSize.x / 2f) * xSpacing;
+        float posX = Mathf.Lerp(-lerpBounds, lerpBounds, gridX / (gridSize.x - 1));
+
+        float posY = ySpacing * gridY + yOffset;
+
+        return new Vector3(posX, posY, 0);
     }
 
     private void findPhysicsMatches(Vector3 center)
     {
-        // detecto a bola central e seu tipo, pra saber qual e o tipo do match que estou procurando
+        // detecto a bola central e seu tipo, pra saber qual o tipo do match que estou procurando
         float triggerDetectSize = .25f;
         Collider[] ballsInside = new Collider[1];
         if (Physics.OverlapSphereNonAlloc(center, triggerDetectSize, ballsInside) <= 0)
@@ -514,7 +559,7 @@ public class GameManager : MonoBehaviour
         GridBall centerBall = ballCollider != null ? ballCollider.GetComponentInParent<GridBall>() : null;
         int matchType = centerBall.type;
 
-        // olho para as bolas em linha reta acima, ate encontrar uma quebra na sequencia
+        // pego todas as bolas em linha reta acima que correspondam ao mesmo tipo, parando quando encontrar uma quebra na sequencia
         List<GridBall> matchedBallsAbove = new List<GridBall>();
         int count = 1;
         do
@@ -617,7 +662,7 @@ public class GameManager : MonoBehaviour
             }
         } while (count > 0);
 
-        // por hora, removo todas as bolas
+        // vejo se as bolas acima e abaixo somam 3 ou mais. o "+ 1" eh a bola central
         bool removeVertical = matchedBallsAbove.Count + matchedBallsBelow.Count + 1 >= 3;
         bool removeHorizontal = matchedBallsLeft.Count + matchedBallsRight.Count + 1 >= 3;
 
@@ -649,6 +694,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // por ultimo destruo a bola central, caso tenha feito match horizontal ou vertical
         if (removeVertical || removeHorizontal)
         {
             allBalls.Remove(centerBall);
