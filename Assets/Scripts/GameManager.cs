@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,6 +39,18 @@ public class GameManager : MonoBehaviour
     private int selectorOrientation; // 0 = horizontal, 1 = vertical
     public bool isUpdating
     { get; private set; }
+    
+    private int _score;
+    public int score
+    {
+        get => _score;
+        private set
+        {
+            _score = value;
+            eventScoreChanged?.Invoke();
+        }
+    }
+    public event Action eventScoreChanged;
 
     #region Callbacks da Unity
     private void Awake()
@@ -105,6 +118,9 @@ public class GameManager : MonoBehaviour
     #region Initialization
     public void resetGrid()
     {
+        // reseto pontuacao
+        score = 0;
+
         // deletar grid anterior, se houver
         for (int k = 0; k < allBalls.Count; k++)
             Destroy(allBalls[k].gameObject);
@@ -167,7 +183,7 @@ public class GameManager : MonoBehaviour
                 do
                 {
                     List<int> typesToChose = allTypes.FindAll(_t => !exclude.Contains(_t));
-                    int pickedType = typesToChose[Random.Range(0, typesToChose.Count)];
+                    int pickedType = typesToChose[UnityEngine.Random.Range(0, typesToChose.Count)];
                     newCell.ballType = pickedType;
 
                     // 2. verifico se apos essa atribuicao, o grid possui matches para tratar
@@ -479,7 +495,7 @@ public class GameManager : MonoBehaviour
         }
 
         float col_worldX = gridToWorldPosition(refillCol, 0).x;
-        allBalls.Add(spawnBall(col_worldX, Random.Range(0, ballColors.Count)));
+        allBalls.Add(spawnBall(col_worldX, UnityEngine.Random.Range(0, ballColors.Count)));
 
         refillCooldownElapsed = 0;
         refillCol = (refillCol + 1) % gridSize.x;
@@ -643,6 +659,9 @@ public class GameManager : MonoBehaviour
                 destroyBall(matchedBallsAbove[k]);
             for (int k = 0; k < matchedBallsBelow.Count; k++)
                 destroyBall(matchedBallsBelow[k]);
+
+            score += matchedBallsAbove.Count * 10;
+            score += matchedBallsBelow.Count * 10;
         }
 
         if (removeHorizontal)
@@ -651,11 +670,17 @@ public class GameManager : MonoBehaviour
                 destroyBall(matchedBallsLeft[k]);
             for (int k = 0; k < matchedBallsRight.Count; k++)
                 destroyBall(matchedBallsRight[k]);
+
+            score += matchedBallsLeft.Count * 10;
+            score += matchedBallsRight.Count * 10;
         }
 
         // por ultimo destruo a bola central, caso tenha feito match horizontal ou vertical
         if (removeVertical || removeHorizontal)
+        {
             destroyBall(centerBall);
+            score += 10;
+        }
     }
 
     private void destroyBall(GridBall ball)
@@ -665,7 +690,7 @@ public class GameManager : MonoBehaviour
         ball.thisCollider.enabled = false;
         ball.thisRigidbody.constraints = RigidbodyConstraints.None;
 
-        Vector2 randomCircle = Random.insideUnitCircle;
+        Vector2 randomCircle = UnityEngine.Random.insideUnitCircle;
         Vector3 randomCircle3d = new Vector3(randomCircle.x, randomCircle.y, 0) * 2;
         Vector3 vectorToCamera = ((Camera.main.transform.position + randomCircle3d) - ball.transform.position).normalized;
         ball.thisRigidbody.AddForce(vectorToCamera * destroyForce);

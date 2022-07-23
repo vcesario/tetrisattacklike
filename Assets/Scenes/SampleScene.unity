@@ -1093,6 +1093,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   screenObject: {fileID: 1077867991}
   thisAnimator: {fileID: 1077867996}
+  scoreTextMesh: {fileID: 515528619}
   controls: {fileID: 30575707}
   gameManager: {fileID: 1403353835}
   popup: {fileID: 2081639205}

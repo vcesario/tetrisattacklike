@@ -1,12 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class TitleScreen : MonoBehaviour
 {
     public GameObject screenObject;
     public Animator thisAnimator;
+    public TMP_Text scoreTextMesh;
+    [Space]
     public Controls controls;
     public GameManager gameManager;
     public Popup popup;
@@ -18,6 +21,7 @@ public class TitleScreen : MonoBehaviour
     {
         screenObject.SetActive(true);
         controls.setInputMode(Controls.InputModes.Title);
+        gameManager.eventScoreChanged += onScoreChanged;
     }
 
     public void playGame()
@@ -45,5 +49,10 @@ public class TitleScreen : MonoBehaviour
     {
         thisAnimator.Play("Title");
         controls.setInputMode(Controls.InputModes.Title);
+    }
+
+    private void onScoreChanged()
+    {
+        scoreTextMesh.text = gameManager.score.ToString("D4");
     }
 }
