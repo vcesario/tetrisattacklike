@@ -189,7 +189,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &37887350
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2126,7 +2126,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1077867992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3094,6 +3094,8 @@ MonoBehaviour:
   - {r: 0.13487405, g: 1, b: 0, a: 1}
   - {r: 0, g: 0.87581515, b: 1, a: 1}
   - {r: 0.84313875, g: 0.31909928, b: 0.8584906, a: 1}
+  scoreFXPrefab: {fileID: 2889097572289024164, guid: 106745f7d5e7dc340b9e1dd0bd92d657,
+    type: 3}
   examples: {fileID: 1372921293}
   popup: {fileID: 2081639205}
   titleScreen: {fileID: 526120077}

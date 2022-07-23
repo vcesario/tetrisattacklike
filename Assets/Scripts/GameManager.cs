@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     public List<Color> ballColors = new List<Color>();
     //public List<Material> ballMaterials = new List<Material>();
     [Space]
+    public GameObject scoreFXPrefab;
+    [Space]
     public GameObject examples;
     public Popup popup;
     public TitleScreen titleScreen;
@@ -635,11 +637,13 @@ public class GameManager : MonoBehaviour
             for (int k = 0; k < matchedBallsAbove.Count; k++)
             {
                 allBalls.Remove(matchedBallsAbove[k]);
+                scoreFX(matchedBallsAbove[k].transform.position);
                 Destroy(matchedBallsAbove[k].gameObject);
             }
             for (int k = 0; k < matchedBallsBelow.Count; k++)
             {
                 allBalls.Remove(matchedBallsBelow[k]);
+                scoreFX(matchedBallsBelow[k].transform.position);
                 Destroy(matchedBallsBelow[k].gameObject);
             }
         }
@@ -649,11 +653,13 @@ public class GameManager : MonoBehaviour
             for (int k = 0; k < matchedBallsLeft.Count; k++)
             {
                 allBalls.Remove(matchedBallsLeft[k]);
+                scoreFX(matchedBallsLeft[k].transform.position);
                 Destroy(matchedBallsLeft[k].gameObject);
             }
             for (int k = 0; k < matchedBallsRight.Count; k++)
             {
                 allBalls.Remove(matchedBallsRight[k]);
+                scoreFX(matchedBallsRight[k].transform.position);
                 Destroy(matchedBallsRight[k].gameObject);
             }
         }
@@ -662,8 +668,14 @@ public class GameManager : MonoBehaviour
         if (removeVertical || removeHorizontal)
         {
             allBalls.Remove(centerBall);
+            scoreFX(centerBall.transform.position);
             Destroy(centerBall.gameObject);
         }
+    }
+
+    private void scoreFX(Vector3 position)
+    {
+        Instantiate(scoreFXPrefab, position, Quaternion.identity);
     }
 }
 
