@@ -57,7 +57,44 @@ public class Controls : MonoBehaviour
 
     private void input_Game()
     {
+        if (!gameManager.isUpdating)
+            return;
 
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            gameManager.moveSelectorUp();
+            gameManager.updateSelectorGraphics();
+        }
+        else if (Input.GetKeyDown(KeyCode.A))
+        {
+            gameManager.moveSelectorLeft();
+            gameManager.updateSelectorGraphics();
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            gameManager.moveSelectorDown();
+            gameManager.updateSelectorGraphics();
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            gameManager.moveSelectorRight();
+            gameManager.updateSelectorGraphics();
+        }
+        //else if (Input.GetKeyDown(KeyCode.Return))
+        //{
+        //    gameManager.changeSelectorOrientation();
+        //    gameManager.updateSelectorGraphics();
+        //}
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            gameManager.trySwapBalls();
+        }
+#if UNITY_EDITOR
+        else if (Input.GetKeyDown(KeyCode.R))
+        {
+            gameManager.resetGrid();
+        }
+#endif
     }
 
     private void input_Popup()

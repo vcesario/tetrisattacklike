@@ -26,7 +26,8 @@ public class GameManager : MonoBehaviour
     private List<GridBall> allBalls = new List<GridBall>();
     private Vector2Int selector_gridPosition;
     private int selectorOrientation; // 0 = horizontal, 1 = vertical
-    private bool isUpdating;
+    public bool isUpdating
+    { get; private set; }
 
     #region Callbacks da Unity
     private void Awake()
@@ -39,7 +40,6 @@ public class GameManager : MonoBehaviour
         if (!isUpdating)
             return;
 
-        inputs();
         dropNewBall();
     }
 
@@ -93,7 +93,7 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Initialization
-    private void resetGrid()
+    public void resetGrid()
     {
         // deletar grid anterior, se houver
         for (int k = 0; k < allBalls.Count; k++)
@@ -238,44 +238,7 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Inputs
-    private void inputs()
-    {
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            moveSelectorUp();
-            updateSelectorGraphics();
-        }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            moveSelectorLeft();
-            updateSelectorGraphics();
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            moveSelectorDown();
-            updateSelectorGraphics();
-        }
-        else if (Input.GetKeyDown(KeyCode.D))
-        {
-            moveSelectorRight();
-            updateSelectorGraphics();
-        }
-        //else if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    changeSelectorOrientation();
-        //    updateSelectorGraphics();
-        //}
-        else if (Input.GetKeyDown(KeyCode.Return))
-        {
-            trySwapBalls();
-        }
-        else if (Input.GetKeyDown(KeyCode.R))
-        {
-            resetGrid();
-        }
-    }
-
-    private void moveSelectorUp()
+    public void moveSelectorUp()
     {
         selector_gridPosition.y++;
 
@@ -294,19 +257,19 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    private void moveSelectorDown()
+    public void moveSelectorDown()
     {
         selector_gridPosition.y--;
 
         if (selector_gridPosition.y < 0) selector_gridPosition.y = 0;
     }
-    private void moveSelectorLeft()
+    public void moveSelectorLeft()
     {
         selector_gridPosition.x--;
 
         if (selector_gridPosition.x < 0) selector_gridPosition.x = 0;
     }
-    private void moveSelectorRight()
+    public void moveSelectorRight()
     {
         selector_gridPosition.x++;
 
@@ -321,7 +284,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void changeSelectorOrientation()
+    public void changeSelectorOrientation()
     {
         if (selectorOrientation == 0)
             selectorOrientation = 1;
@@ -339,7 +302,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void updateSelectorGraphics()
+    public void updateSelectorGraphics()
     {
         // atualiza position
         Vector3 selectedCell_worldPosition = gridToWorldPosition(selector_gridPosition.x, selector_gridPosition.y);
@@ -367,13 +330,13 @@ public class GameManager : MonoBehaviour
     }
 
     // trocar bolas de posicao
-    private void trySwapBalls()
+    public void trySwapBalls()
     {
         //if (areSelectedBallsSwappable())
         StartCoroutine(_swapBalls());
     }
 
-    private bool areSelectedBallsSwappable()
+    public bool areSelectedBallsSwappable()
     {
         Debug.Log("refazer habilitancia do selector");
         //GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];

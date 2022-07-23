@@ -6,6 +6,7 @@ using UnityEngine;
 public class TitleScreen : MonoBehaviour
 {
     public GameObject screenObject;
+    public Animator thisAnimator;
     public Controls controls;
     public GameManager gameManager;
     public Popup popup;
@@ -21,7 +22,9 @@ public class TitleScreen : MonoBehaviour
 
     public void playGame()
     {
-        Debug.Log("Iniciou jogo!");
+        thisAnimator.Play("InGame");
+        gameManager.resetGrid();
+        controls.setInputMode(Controls.InputModes.Game);
     }
 
     public void exitGame()
