@@ -89,6 +89,10 @@ public class Controls : MonoBehaviour
         {
             gameManager.trySwapBalls();
         }
+        else if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            gameManager.finishGame();
+        }
 #if UNITY_EDITOR
         else if (Input.GetKeyDown(KeyCode.R))
         {

@@ -21,6 +21,9 @@ public class GameManager : MonoBehaviour
     //public List<Material> ballMaterials = new List<Material>();
     [Space]
     public GameObject examples;
+    public Popup popup;
+    public TitleScreen titleScreen;
+    public Controls controls;
 
     private GridCell[,] grid;
     private List<GridBall> allBalls = new List<GridBall>();
@@ -375,7 +378,7 @@ public class GameManager : MonoBehaviour
         Collider ballBCollider = ballsInside.Length > 0 ? ballsInside[0] : null;
         GridBall ballB = ballBCollider != null ? ballBCollider.GetComponentInParent<GridBall>() : null;
 
-        // realizo a troca de posicao
+        // desligo a fisica das bolas e realizo a troca de posicao
         Vector3 aOrigin = Vector3.zero;
         Vector3 aDest = Vector3.zero;
         Vector3 bOrigin = Vector3.zero;
@@ -410,6 +413,7 @@ public class GameManager : MonoBehaviour
             yield return 0;
         }
 
+        // finalizo a troca colocando cada bola na posicao certa, reativando a fisica e por ultimo verifico se tem matches
         if (ballA != null)
         {
             ballA.transform.position = aDest;
@@ -428,6 +432,22 @@ public class GameManager : MonoBehaviour
 
             findPhysicsMatches(bDest);
         }
+    }
+
+    public void finishGame()
+    {
+        // pauso o jogo
+        isUpdating = false;
+        Physics.autoSimulation = false;
+
+        popup.Open("End game",
+            delegate { clearGame(); Physics.autoSimulation = true; titleScreen.backToTitle(); },
+            delegate { isUpdating = true; Physics.autoSimulation = true; controls.setInputMode(Controls.InputModes.Game); });
+    }
+
+    private void clearGame()
+    {
+        Debug.Log("TO DO CLEAR GAME");
     }
     #endregion
 

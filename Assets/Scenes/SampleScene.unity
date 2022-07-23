@@ -328,7 +328,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 5.59
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2686,6 +2686,9 @@ MonoBehaviour:
   - {r: 0, g: 0.87581515, b: 1, a: 1}
   - {r: 0.84313875, g: 0.31909928, b: 0.8584906, a: 1}
   examples: {fileID: 1372921293}
+  popup: {fileID: 2081639205}
+  titleScreen: {fileID: 526120077}
+  controls: {fileID: 30575707}
   refillCountdown: 3
   refillCooldown: 1
 --- !u!1 &1449744428

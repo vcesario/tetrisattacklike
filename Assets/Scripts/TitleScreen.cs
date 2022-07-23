@@ -40,4 +40,10 @@ public class TitleScreen : MonoBehaviour
             delegate { Debug.Log("Resetou scores!"); controls.setInputMode(Controls.InputModes.Title); },
             delegate { Debug.Log("Não resetou scores..."); controls.setInputMode(Controls.InputModes.Title); });
     }
+
+    public void backToTitle()
+    {
+        thisAnimator.Play("Title");
+        controls.setInputMode(Controls.InputModes.Title);
+    }
 }
