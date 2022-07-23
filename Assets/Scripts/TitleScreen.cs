@@ -1,18 +1,40 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TitleScreen : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public GameObject screenObject;
+    public Controls controls;
+    public GameManager gameManager;
+    public Popup popup;
+
+    public bool isAnimating
+    { get; private set; }
+
+    private void Start()
     {
-        
+        screenObject.SetActive(true);
+        controls.setInputMode(Controls.InputModes.Title);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void playGame()
     {
-        
+        Debug.Log("Iniciou jogo!");
+    }
+
+    public void exitGame()
+    {
+        popup.Open("Exit",
+            delegate { Debug.Log("Fechou o jogo!"); Application.Quit(); controls.setInputMode(Controls.InputModes.Title); },
+            delegate { Debug.Log("Não fechou o jogo..."); controls.setInputMode(Controls.InputModes.Title); });
+    }
+
+    public void clearScores()
+    {
+        popup.Open("Clear scores",
+            delegate { Debug.Log("Resetou scores!"); controls.setInputMode(Controls.InputModes.Title); },
+            delegate { Debug.Log("Não resetou scores..."); controls.setInputMode(Controls.InputModes.Title); });
     }
 }

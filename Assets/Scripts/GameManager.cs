@@ -26,21 +26,21 @@ public class GameManager : MonoBehaviour
     private List<GridBall> allBalls = new List<GridBall>();
     private Vector2Int selector_gridPosition;
     private int selectorOrientation; // 0 = horizontal, 1 = vertical
-    private bool isInitializing;
+    private bool isUpdating;
 
     #region Callbacks da Unity
-    private void Start()
+    private void Awake()
     {
         examples.SetActive(false);
-
-        resetGrid();
     }
 
     private void Update()
     {
-        inputs();
+        if (!isUpdating)
+            return;
 
-        ballRefill();
+        inputs();
+        dropNewBall();
     }
 
 
@@ -100,12 +100,17 @@ public class GameManager : MonoBehaviour
             Destroy(allBalls[k].gameObject);
         allBalls.Clear();
 
+        // resetar variaveis do dropNewBall()
+        refillCountdownElapsed = 0;
+        refillCooldownElapsed = 0;
+        refillCol = 0;
+
         StartCoroutine(_spawnNewGrid());
     }
 
     private IEnumerator _spawnNewGrid()
     {
-        isInitializing = true;
+        isUpdating = false;
         selector.gameObject.SetActive(false);
 
         initializeGrid();
@@ -125,7 +130,7 @@ public class GameManager : MonoBehaviour
         }
 
         selector.gameObject.SetActive(true);
-        isInitializing = false;
+        isUpdating = true;
         updateSelectorGraphics();
     }
 
@@ -235,9 +240,6 @@ public class GameManager : MonoBehaviour
     #region Inputs
     private void inputs()
     {
-        if (isInitializing)
-            return;
-
         if (Input.GetKeyDown(KeyCode.W))
         {
             moveSelectorUp();
@@ -468,20 +470,12 @@ public class GameManager : MonoBehaviour
 
     #region Refill
     public float refillCountdown = 3;
-    private float refillCountdownElapsed = 0;
     public float refillCooldown = 1;
+    private float refillCountdownElapsed = 0;
     private float refillCooldownElapsed = 0;
     private int refillCol = 0;
-    private void ballRefill()
+    private void dropNewBall()
     {
-        if (isInitializing)
-        {
-            refillCountdownElapsed = 0;
-            refillCooldownElapsed = 0;
-            refillCol = 0;
-            return;
-        }
-
         if (refillCountdownElapsed < refillCountdown)
         {
             refillCountdownElapsed += Time.deltaTime;
