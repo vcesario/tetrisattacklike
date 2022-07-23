@@ -21,6 +21,11 @@ public class GameManager : MonoBehaviour
     //public List<Material> ballMaterials = new List<Material>();
     [Space]
     public GameObject scoreFXPrefab;
+    public float destroyForce = 10;
+    public float destroyScale = 6;
+    public AnimationCurve destroyScaleCurve;
+    public float destroyRotation = 360;
+    public AnimationCurve destroyRotationCurve;
     [Space]
     public GameObject examples;
     public Popup popup;
@@ -635,42 +640,36 @@ public class GameManager : MonoBehaviour
         if (removeVertical)
         {
             for (int k = 0; k < matchedBallsAbove.Count; k++)
-            {
-                allBalls.Remove(matchedBallsAbove[k]);
-                scoreFX(matchedBallsAbove[k].transform.position);
-                Destroy(matchedBallsAbove[k].gameObject);
-            }
+                destroyBall(matchedBallsAbove[k]);
             for (int k = 0; k < matchedBallsBelow.Count; k++)
-            {
-                allBalls.Remove(matchedBallsBelow[k]);
-                scoreFX(matchedBallsBelow[k].transform.position);
-                Destroy(matchedBallsBelow[k].gameObject);
-            }
+                destroyBall(matchedBallsBelow[k]);
         }
 
         if (removeHorizontal)
         {
             for (int k = 0; k < matchedBallsLeft.Count; k++)
-            {
-                allBalls.Remove(matchedBallsLeft[k]);
-                scoreFX(matchedBallsLeft[k].transform.position);
-                Destroy(matchedBallsLeft[k].gameObject);
-            }
+                destroyBall(matchedBallsLeft[k]);
             for (int k = 0; k < matchedBallsRight.Count; k++)
-            {
-                allBalls.Remove(matchedBallsRight[k]);
-                scoreFX(matchedBallsRight[k].transform.position);
-                Destroy(matchedBallsRight[k].gameObject);
-            }
+                destroyBall(matchedBallsRight[k]);
         }
 
         // por ultimo destruo a bola central, caso tenha feito match horizontal ou vertical
         if (removeVertical || removeHorizontal)
-        {
-            allBalls.Remove(centerBall);
-            scoreFX(centerBall.transform.position);
-            Destroy(centerBall.gameObject);
-        }
+            destroyBall(centerBall);
+    }
+
+    private void destroyBall(GridBall ball)
+    {
+        allBalls.Remove(ball);
+        scoreFX(ball.transform.position);
+        ball.thisCollider.enabled = false;
+        ball.thisRigidbody.constraints = RigidbodyConstraints.None;
+
+        Vector2 randomCircle = Random.insideUnitCircle;
+        Vector3 randomCircle3d = new Vector3(randomCircle.x, randomCircle.y, 0) * 2;
+        Vector3 vectorToCamera = ((Camera.main.transform.position + randomCircle3d) - ball.transform.position).normalized;
+        ball.thisRigidbody.AddForce(vectorToCamera * destroyForce);
+        ball.selfDestruct(3, destroyScale, destroyScaleCurve, destroyRotation, destroyRotationCurve);
     }
 
     private void scoreFX(Vector3 position)
