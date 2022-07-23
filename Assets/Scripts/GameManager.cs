@@ -440,9 +440,9 @@ public class GameManager : MonoBehaviour
         isUpdating = false;
         Physics.autoSimulation = false;
 
-        popup.Open("End game",
+        popup.Open("End game", "( Return to title screen and submit current score )",
             delegate { clearGame(); Physics.autoSimulation = true; titleScreen.backToTitle(); },
-            delegate { isUpdating = true; Physics.autoSimulation = true; controls.setInputMode(Controls.InputModes.Game); });
+            delegate { isUpdating = true; Physics.autoSimulation = true; controls.setInputMode(Controls.InputModes.Game); }); ;
     }
 
     private void clearGame()
