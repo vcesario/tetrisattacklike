@@ -17,6 +17,10 @@ public class TitleScreen : MonoBehaviour
     public Controls controls;
     public GameManager gameManager;
     public Popup popup;
+    public AudioManager audioManager;
+
+    [Space]
+    public bool skipIntro;
 
     public bool isAnimating
     { get; private set; }
@@ -25,6 +29,9 @@ public class TitleScreen : MonoBehaviour
 
     private void Start()
     {
+        if (!Application.isEditor)
+            skipIntro = false;
+
         screenObject.SetActive(true);
         gameManager.eventScoreChanged += onScoreChanged;
         firstOpen = true;
@@ -37,6 +44,7 @@ public class TitleScreen : MonoBehaviour
         thisAnimator.Play("InGame");
         gameManager.resetGrid();
         controls.setInputMode(Controls.InputModes.Game);
+        audioManager.musicSpeed(1f);
     }
 
     public void exitGame()
@@ -69,7 +77,7 @@ public class TitleScreen : MonoBehaviour
         isAnimating = true;
         titleControlsTextMesh.gameObject.SetActive(false);
 
-        if (firstOpen)
+        if (firstOpen && !skipIntro)
         {
             // caso seja a primeira vez que estou abrindo a tela no jogo:
             //  se tenho pontuacao salva, apenas mostro imediatamente

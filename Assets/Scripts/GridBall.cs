@@ -12,6 +12,8 @@ public class GridBall : MonoBehaviour
     public float animateCooldown;
 
     public int type;
+    [Space]
+    public AudioManager audioManager;
 
     private bool isSelfDestroying = false;
     private float selfDestructTimer;
@@ -21,16 +23,17 @@ public class GridBall : MonoBehaviour
     private AnimationCurve scaleCurve;
     private AnimationCurve rotationCurve;
 
+    public bool goingDown;
     private void Update()
     {
-        if (!isSelfDestroying)
-            return;
-
-        selfDestructTimerElapsed += Time.deltaTime;
-        transform.localScale = Vector3.one * (1 + scaleCurve.Evaluate(selfDestructTimerElapsed / selfDestructTimer) * maxScale);
-        transform.localRotation = Quaternion.Euler(rotationCurve.Evaluate(selfDestructTimerElapsed / selfDestructTimer) * maxRotation, 0, 0);
-        if (selfDestructTimerElapsed <= 0)
-            Destroy(gameObject);
+        if (isSelfDestroying)
+        {
+            selfDestructTimerElapsed += Time.deltaTime;
+            transform.localScale = Vector3.one * (1 + scaleCurve.Evaluate(selfDestructTimerElapsed / selfDestructTimer) * maxScale);
+            transform.localRotation = Quaternion.Euler(rotationCurve.Evaluate(selfDestructTimerElapsed / selfDestructTimer) * maxRotation, 0, 0);
+            if (selfDestructTimerElapsed <= 0)
+                Destroy(gameObject);
+        }
     }
 
     public void selfDestruct(float timer, float scale, AnimationCurve scaleCurve, float rotation, AnimationCurve rotationCurve)
@@ -51,7 +54,7 @@ public class GridCell
 
     public GridCell()
     {
-        
+
     }
 }
 

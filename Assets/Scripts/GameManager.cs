@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
     public Popup popup;
     public TitleScreen titleScreen;
     public Controls controls;
+    public AudioManager audioManager;
 
     public bool isUpdating
     { get; private set; }
@@ -98,6 +99,17 @@ public class GameManager : MonoBehaviour
                 }
 
                 allBalls[k].animateCooldown = .25f;
+
+                // som
+                if (allBalls[k].goingDown && Mathf.Sign(allBalls[k].thisRigidbody.velocity.y) == 1)
+                {
+                    allBalls[k].goingDown = false;
+                    audioManager.playSound(AudioID.Bounce);
+                }
+                else if (!allBalls[k].goingDown && Mathf.Sign(allBalls[k].thisRigidbody.velocity.y) == -1)
+                {
+                    allBalls[k].goingDown = true;
+                }
             }
             else
             {
@@ -447,7 +459,9 @@ public class GameManager : MonoBehaviour
         Physics.autoSimulation = false;
 
         popup.Open("End game", "( Submit current score and return to title screen )",
-            delegate { saveScore();  clearGame(); Physics.autoSimulation = true; titleScreen.open(); },
+            delegate {
+                Physics.autoSimulation = true;
+                StartCoroutine(_animateClosing()); },
             delegate { isUpdating = true; Physics.autoSimulation = true; controls.setInputMode(Controls.InputModes.Game); }); ;
     }
 
@@ -505,6 +519,7 @@ public class GameManager : MonoBehaviour
         newRenderer.materials[1].SetColor("_Color", ballColors[ballType]);
 
         newBall.type = ballType;
+        newBall.animateCooldown = 1f;
 
         return newBall;
     }
@@ -706,13 +721,14 @@ public class GameManager : MonoBehaviour
         }
 
         if (gameFinished)
-            StartCoroutine(_animateLosing());
+            StartCoroutine(_animateClosing());
     }
 
-    private IEnumerator _animateLosing()
+    private IEnumerator _animateClosing()
     {
         isUpdating = false;
         selector.gameObject.SetActive(false);
+        audioManager.musicSpeed(.9f);
 
         yield return new WaitForSeconds(1);
 
