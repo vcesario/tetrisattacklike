@@ -51,7 +51,7 @@ public class Controls : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.Z))
         {
-            titleScreen.clearScores();
+            titleScreen.clearScoresPrompt();
         }
     }
 
