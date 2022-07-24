@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
     public float destroyRotation = 360;
     public AnimationCurve destroyRotationCurve;
     [Space]
+    public int level2Score = 500;
+    public int level3Score = 1000;
     public BoxCollider gameOverTrigger;
     [Space]
     public GameObject examples;
@@ -61,6 +63,11 @@ public class GameManager : MonoBehaviour
     {
         examples.SetActive(false);
         ballsOnlyMask = LayerMask.GetMask("Default");
+    }
+
+    private void Start()
+    {
+        eventScoreChanged += refreshGameSpeed;
     }
 
     private void Update()
@@ -291,29 +298,35 @@ public class GameManager : MonoBehaviour
         if (selectorOrientation == 0)
         {
             if (selector_gridPosition.y > yLimit)
-            {
                 selector_gridPosition.y = yLimit;
-            }
+            else
+                audioManager.playSound(AudioID.Move);
         }
         else
         {
             if (selector_gridPosition.y > yLimit - 1)
-            {
                 selector_gridPosition.y = yLimit - 1;
-            }
+            else
+                audioManager.playSound(AudioID.Move);
         }
     }
     public void moveSelectorDown()
     {
         selector_gridPosition.y--;
 
-        if (selector_gridPosition.y < 0) selector_gridPosition.y = 0;
+        if (selector_gridPosition.y < 0)
+            selector_gridPosition.y = 0;
+        else
+            audioManager.playSound(AudioID.Move);
     }
     public void moveSelectorLeft()
     {
         selector_gridPosition.x--;
 
-        if (selector_gridPosition.x < 0) selector_gridPosition.x = 0;
+        if (selector_gridPosition.x < 0)
+            selector_gridPosition.x = 0;
+        else
+            audioManager.playSound(AudioID.Move);
     }
     public void moveSelectorRight()
     {
@@ -322,11 +335,17 @@ public class GameManager : MonoBehaviour
         // se estiver no sentido horizontal, o selector nao pode ficar na ultima coluna pois ele ja considera a bola a direita
         if (selectorOrientation == 0)
         {
-            if (selector_gridPosition.x > gridSize.x - 2) selector_gridPosition.x = gridSize.x - 2;
+            if (selector_gridPosition.x > gridSize.x - 2)
+                selector_gridPosition.x = gridSize.x - 2;
+            else
+                audioManager.playSound(AudioID.Move);
         }
         else
         {
-            if (selector_gridPosition.x > gridSize.x - 1) selector_gridPosition.x = gridSize.x - 1;
+            if (selector_gridPosition.x > gridSize.x - 1)
+                selector_gridPosition.x = gridSize.x - 1;
+            else
+                audioManager.playSound(AudioID.Move);
         }
     }
 
@@ -484,22 +503,22 @@ public class GameManager : MonoBehaviour
     #region Refill
     public float refillCountdown = 3;
     public float refillCooldown = 1;
+    private float currentRefillCooldown = 0;
     private float refillCountdownElapsed = 0;
     private float refillCooldownElapsed = 0;
     private int refillCol = 0;
     private void dropNewBall()
     {
+        refillCooldownElapsed += Time.deltaTime;
+
         if (refillCountdownElapsed < refillCountdown)
         {
             refillCountdownElapsed += Time.deltaTime;
             return;
         }
 
-        if (refillCooldownElapsed < refillCooldown)
-        {
-            refillCooldownElapsed += Time.deltaTime;
+        if (refillCooldownElapsed < currentRefillCooldown)
             return;
-        }
 
         float col_worldX = gridToWorldPosition(refillCol, 0).x;
         allBalls.Add(spawnBall(col_worldX, UnityEngine.Random.Range(0, ballColors.Count)));
@@ -743,7 +762,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1);
 
         titleScreen.thisAnimator.Play("GameOver");
-        
+
         while (allBalls.Count > 0)
         {
             audioManager.playSound(AudioID.Bounce);
@@ -761,6 +780,43 @@ public class GameManager : MonoBehaviour
         saveScore();
         clearGame();
         titleScreen.open();
+    }
+
+    private int gameSpeed;
+    private void refreshGameSpeed()
+    {
+        if (score >= level3Score)
+        {
+            if (gameSpeed < 2)
+            {
+                gameSpeed = 2;
+                currentRefillCooldown = refillCooldown * .4f;
+                audioManager.musicSpeed(1.17f, .5f);
+                audioManager.playSound(AudioID.UI_ConfirmBig);
+
+                LeanTween.cancel(titleScreen.scoreParent);
+                LeanTween.scale(titleScreen.scoreParent, Vector3.one, 1f).setFrom(Vector3.one * 3f).setEaseSpring();
+            }
+        }
+        else if (score >= level2Score)
+        {
+            if (gameSpeed < 1)
+            {
+                gameSpeed = 1;
+                currentRefillCooldown = refillCooldown * .65f;
+                audioManager.musicSpeed(1.1f, .5f);
+                audioManager.playSound(AudioID.UI_ConfirmBig);
+
+                LeanTween.cancel(titleScreen.scoreParent);
+                LeanTween.scale(titleScreen.scoreParent, Vector3.one, 1f).setFrom(Vector3.one * 3f).setEaseSpring();
+            }
+        }
+        else
+        {
+            gameSpeed = 0;
+            currentRefillCooldown = refillCooldown;
+            audioManager.musicSpeed(1f, .5f);
+        }
     }
 }
 

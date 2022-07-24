@@ -6,9 +6,10 @@ public class Controls : MonoBehaviour
 {
     public TitleScreen titleScreen;
     public GameManager gameManager;
+    public AudioManager audioManager;
     public Popup popup;
 
-    public enum InputModes { None = 0, Title = 1, Game = 2, Popup = 3 }
+    public enum InputModes { None = 0, Title = 1, Game = 2, Popup = 3, Credits = 4 }
     [SerializeField]
     private InputModes currentInputMode;
 
@@ -24,6 +25,9 @@ public class Controls : MonoBehaviour
                 break;
             case InputModes.Popup:
                 input_Popup();
+                break;
+            case InputModes.Credits:
+                input_Credits();
                 break;
             default:
                 break;
@@ -51,7 +55,15 @@ public class Controls : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.Z))
         {
-            titleScreen.clearScoresPrompt();
+            titleScreen.openCredits();
+        }
+        else if (Input.GetKeyDown(KeyCode.X))
+        {
+            titleScreen.clearDataPrompt();
+        }
+        else if (Input.GetKeyDown(KeyCode.M))
+        {
+            audioManager.toggleMute();
         }
     }
 
@@ -93,6 +105,10 @@ public class Controls : MonoBehaviour
         {
             gameManager.finishGame();
         }
+        else if (Input.GetKeyDown(KeyCode.M))
+        {
+            audioManager.toggleMute();
+        }
 #if UNITY_EDITOR
         else if (Input.GetKeyDown(KeyCode.R))
         {
@@ -110,6 +126,14 @@ public class Controls : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.N))
         {
             popup.no();
+        }
+    }
+
+    private void input_Credits()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            titleScreen.closeCredits();
         }
     }
 }

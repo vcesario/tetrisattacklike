@@ -12,6 +12,7 @@ public class TitleScreen : MonoBehaviour
     public TMP_Text scoreTextMesh;
     public TMP_Text lastScoreTextMesh;
     public TMP_Text bestScoreTextMesh;
+    public GameObject scoreParent;
 
     [Space]
     public Controls controls;
@@ -56,9 +57,9 @@ public class TitleScreen : MonoBehaviour
             delegate { Debug.Log("Não fechou o jogo..."); controls.setInputMode(Controls.InputModes.Title); });
     }
 
-    public void clearScoresPrompt()
+    public void clearDataPrompt()
     {
-        popup.Open("Clear scores",
+        popup.Open("Clear data", "( Score information and audio state )",
             delegate { clearScores(); controls.setInputMode(Controls.InputModes.Title); },
             delegate { controls.setInputMode(Controls.InputModes.Title); });
     }
@@ -168,5 +169,18 @@ public class TitleScreen : MonoBehaviour
     private void onScoreChanged()
     {
         scoreTextMesh.text = gameManager.score.ToString("D4");
+    }
+
+    public void openCredits()
+    {
+        thisAnimator.Play("Credits");
+        audioManager.playSound(AudioID.UI_Confirm);
+        controls.setInputMode(Controls.InputModes.Credits);
+    }
+    public void closeCredits()
+    {
+        thisAnimator.Play("Title");
+        audioManager.playSound(AudioID.UI_Cancel);
+        controls.setInputMode(Controls.InputModes.Title);
     }
 }

@@ -14,6 +14,11 @@ public class AudioManager : MonoBehaviour
     private float bounceCooldown;
     private int soundSourceIndex;
 
+    private void Start()
+    {
+        setMute(PlayerPrefs.GetInt("audioEnabled", 1) == 0);
+    }
+
     private void Update()
     {
         if (bounceCooldown > 0)
@@ -40,9 +45,14 @@ public class AudioManager : MonoBehaviour
     {
         musicSpeed(to, 1);
     }
+    
+    LTDescr musicSpeedTweener;
     public void musicSpeed(float to, float duration)
     {
-        LeanTween.value(musicSource.pitch, to, duration).setOnUpdate(delegate (float value)
+        if (musicSpeedTweener != null)
+            LeanTween.cancel(musicSpeedTweener.uniqueId);
+
+        musicSpeedTweener = LeanTween.value(musicSource.pitch, to, duration).setOnUpdate(delegate (float value)
         {
             musicSource.pitch = value;
         });
@@ -77,6 +87,27 @@ public class AudioManager : MonoBehaviour
         soundSources[soundSourceIndex].Play();
         soundSourceIndex = (soundSourceIndex + 1) % soundSources.Count;
     }
+
+    public void toggleMute()
+    {
+        int audioEnabled = PlayerPrefs.GetInt("audioEnabled", 1); // 1 com som, 0 mutado
+
+        setMute(audioEnabled == 1);
+
+        playSound(AudioID.UI_Confirm);
+    }
+    private void setMute(bool value)
+    {
+        musicSource.mute = value;
+        foreach (var source in soundSources)
+            source.mute = value;
+
+        if (value)
+            PlayerPrefs.SetInt("audioEnabled", 0);
+        else
+            PlayerPrefs.SetInt("audioEnabled", 1);
+        PlayerPrefs.Save();
+    }
 }
 
 [System.Serializable]
@@ -99,5 +130,6 @@ public enum AudioID
     Bell = 7,
     Match = 8,
     Swap = 9,
+    Move = 10,
 }
 
