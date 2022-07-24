@@ -19,7 +19,6 @@ public class GameManager : MonoBehaviour
     public Material outlineMat;
     public Material ballMat;
     public List<Color> ballColors = new List<Color>();
-    //public List<Material> ballMaterials = new List<Material>();
     [Space]
     public GameObject scoreFXPrefab;
     public float destroyForce = 10;
@@ -28,19 +27,16 @@ public class GameManager : MonoBehaviour
     public float destroyRotation = 360;
     public AnimationCurve destroyRotationCurve;
     [Space]
+    public BoxCollider gameOverTrigger;
+    [Space]
     public GameObject examples;
     public Popup popup;
     public TitleScreen titleScreen;
     public Controls controls;
 
-    private GridCell[,] grid;
-    private List<GridBall> allBalls = new List<GridBall>();
-    private Vector2Int selector_gridPosition;
-    private int selectorOrientation; // 0 = horizontal, 1 = vertical
     public bool isUpdating
     { get; private set; }
-    
-    private int _score;
+
     public int score
     {
         get => _score;
@@ -52,10 +48,18 @@ public class GameManager : MonoBehaviour
     }
     public event Action eventScoreChanged;
 
+    private GridCell[,] grid;
+    private List<GridBall> allBalls = new List<GridBall>();
+    private Vector2Int selector_gridPosition;
+    private int selectorOrientation; // 0 = horizontal, 1 = vertical
+    private int ballsOnlyMask;
+    private int _score;
+
     #region Callbacks da Unity
     private void Awake()
     {
         examples.SetActive(false);
+        ballsOnlyMask = LayerMask.GetMask("Default");
     }
 
     private void Update()
@@ -73,6 +77,9 @@ public class GameManager : MonoBehaviour
      */
     private void FixedUpdate()
     {
+        if (!isUpdating)
+            return;
+
         bool ballChangedState = false;
 
         for (int k = 0; k < allBalls.Count; k++)
@@ -105,6 +112,7 @@ public class GameManager : MonoBehaviour
                         ballChangedState = true;
 
                         findPhysicsMatches(allBalls[k].transform.position);
+                        checkGameOver();
                     }
                 }
             }
@@ -350,40 +358,15 @@ public class GameManager : MonoBehaviour
             selector.localRotation = Quaternion.identity;
         else
             selector.localRotation = Quaternion.Euler(0, 0, 90);
-
-        // atualiza estado do seletor
-        selectorRenderer.sharedMaterial.color = areSelectedBallsSwappable() ? colorSelectorEnabled : colorSelectorDisabled;
     }
 
     // trocar bolas de posicao
-    public void trySwapBalls()
+    public void swapBalls()
     {
         //if (areSelectedBallsSwappable())
         StartCoroutine(_swapBalls());
     }
 
-    public bool areSelectedBallsSwappable()
-    {
-        Debug.Log("refazer habilitancia do selector");
-        //GridCell cellA = grid[selector_gridPosition.x, selector_gridPosition.y];
-
-        //if (cellA == null || cellA.ball == null || ballsCurrentlyAnimating.Contains(cellA.ball))
-        //    return false;
-
-        //GridCell cellB;
-
-        //Vector2Int ballB_gridPosition;
-        //if (selectorOrientation == 0)
-        //    ballB_gridPosition = new Vector2Int(selector_gridPosition.x + 1, selector_gridPosition.y);
-        //else
-        //    ballB_gridPosition = new Vector2Int(selector_gridPosition.x, selector_gridPosition.y + 1);
-        //cellB = grid[ballB_gridPosition.x, ballB_gridPosition.y];
-
-        //if (cellB == null || cellB.ball == null || ballsCurrentlyAnimating.Contains(cellB.ball))
-        //    return false;
-
-        return true;
-    }
 
     private IEnumerator _swapBalls()
     {
@@ -392,12 +375,12 @@ public class GameManager : MonoBehaviour
         Vector3 ballB_worldPos = gridToWorldPosition(selector_gridPosition.x + 1, selector_gridPosition.y);
         float triggerDetectSize = .25f;
 
-        Collider[] ballsInside = Physics.OverlapSphere(ballA_worldPos, triggerDetectSize);
+        Collider[] ballsInside = Physics.OverlapSphere(ballA_worldPos, triggerDetectSize, ballsOnlyMask);
         Collider ballACollider = ballsInside.Length > 0 ? ballsInside[0] : null;
         GridBall ballA = ballACollider != null ? ballACollider.GetComponentInParent<GridBall>() : null;
 
         // faco a mesma coisa, agora para a bola 'oposta'
-        ballsInside = Physics.OverlapSphere(ballB_worldPos, triggerDetectSize);
+        ballsInside = Physics.OverlapSphere(ballB_worldPos, triggerDetectSize, ballsOnlyMask);
         Collider ballBCollider = ballsInside.Length > 0 ? ballsInside[0] : null;
         GridBall ballB = ballBCollider != null ? ballBCollider.GetComponentInParent<GridBall>() : null;
 
@@ -546,7 +529,7 @@ public class GameManager : MonoBehaviour
         // detecto a bola central e seu tipo, pra saber qual o tipo do match que estou procurando
         float triggerDetectSize = .25f;
         Collider[] ballsInside = new Collider[1];
-        if (Physics.OverlapSphereNonAlloc(center, triggerDetectSize, ballsInside) <= 0)
+        if (Physics.OverlapSphereNonAlloc(center, triggerDetectSize, ballsInside, ballsOnlyMask) <= 0)
             return;
         Collider ballCollider = ballsInside.Length > 0 ? ballsInside[0] : null;
         GridBall centerBall = ballCollider != null ? ballCollider.GetComponentInParent<GridBall>() : null;
@@ -558,7 +541,7 @@ public class GameManager : MonoBehaviour
         do
         {
             Vector3 abovePos = center + Vector3.up * ySpacing * count;
-            if (Physics.OverlapSphereNonAlloc(abovePos, triggerDetectSize, ballsInside) <= 0)
+            if (Physics.OverlapSphereNonAlloc(abovePos, triggerDetectSize, ballsInside, ballsOnlyMask) <= 0)
             {
                 count = 0;
             }
@@ -585,7 +568,7 @@ public class GameManager : MonoBehaviour
         {
             Vector3 belowPos = center + Vector3.down * ySpacing * count;
 
-            if (Physics.OverlapSphereNonAlloc(belowPos, triggerDetectSize, ballsInside) <= 0)
+            if (Physics.OverlapSphereNonAlloc(belowPos, triggerDetectSize, ballsInside, ballsOnlyMask) <= 0)
             {
                 count = 0;
             }
@@ -610,7 +593,7 @@ public class GameManager : MonoBehaviour
         do
         {
             Vector3 rightPos = center + Vector3.right * xSpacing * count;
-            if (Physics.OverlapSphereNonAlloc(rightPos, triggerDetectSize, ballsInside) <= 0)
+            if (Physics.OverlapSphereNonAlloc(rightPos, triggerDetectSize, ballsInside, ballsOnlyMask) <= 0)
             {
                 count = 0;
             }
@@ -635,7 +618,7 @@ public class GameManager : MonoBehaviour
         do
         {
             Vector3 leftPos = center + Vector3.left * xSpacing * count;
-            if (Physics.OverlapSphereNonAlloc(leftPos, triggerDetectSize, ballsInside) <= 0)
+            if (Physics.OverlapSphereNonAlloc(leftPos, triggerDetectSize, ballsInside, ballsOnlyMask) <= 0)
             {
                 count = 0;
             }
@@ -689,7 +672,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void destroyBall(GridBall ball)
+    private void destroyBall(GridBall ball, float throwForce = 2)
     {
         allBalls.Remove(ball);
         scoreFX(ball.transform.position);
@@ -697,7 +680,7 @@ public class GameManager : MonoBehaviour
         ball.thisRigidbody.constraints = RigidbodyConstraints.None;
 
         Vector2 randomCircle = UnityEngine.Random.insideUnitCircle;
-        Vector3 randomCircle3d = new Vector3(randomCircle.x, randomCircle.y, 0) * 2;
+        Vector3 randomCircle3d = new Vector3(randomCircle.x, randomCircle.y, 0) * throwForce;
         Vector3 vectorToCamera = ((Camera.main.transform.position + randomCircle3d) - ball.transform.position).normalized;
         ball.thisRigidbody.AddForce(vectorToCamera * destroyForce);
         ball.selfDestruct(3, destroyScale, destroyScaleCurve, destroyRotation, destroyRotationCurve);
@@ -706,6 +689,51 @@ public class GameManager : MonoBehaviour
     private void scoreFX(Vector3 position)
     {
         Instantiate(scoreFXPrefab, position, Quaternion.identity);
+    }
+
+    private void checkGameOver()
+    {
+        bool gameFinished = false;
+        Collider[] collidersIn = Physics.OverlapBox(gameOverTrigger.transform.position, gameOverTrigger.size / 2);
+        foreach (var coll in collidersIn)
+        {
+            var ball = coll.GetComponent<GridBall>();
+            if (ball != null && ball.animateCooldown <= 0)
+            {
+                gameFinished = true;
+                break;
+            }
+        }
+
+        if (gameFinished)
+            StartCoroutine(_animateLosing());
+    }
+
+    private IEnumerator _animateLosing()
+    {
+        isUpdating = false;
+        selector.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(1);
+
+        titleScreen.thisAnimator.Play("GameOver");
+
+        while (allBalls.Count > 0)
+        {
+            destroyBall(allBalls[allBalls.Count - 1], 10);
+
+            for (int f = 0; f < 4; f++)
+                yield return 0;
+        }
+
+        while (titleScreen.thisAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
+                yield return 0;
+
+        yield return new WaitForSeconds(2);
+
+        saveScore();
+        clearGame();
+        titleScreen.open();
     }
 }
 

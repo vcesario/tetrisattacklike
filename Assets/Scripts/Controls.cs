@@ -87,7 +87,7 @@ public class Controls : MonoBehaviour
         //}
         else if (Input.GetKeyDown(KeyCode.Space))
         {
-            gameManager.trySwapBalls();
+            gameManager.swapBalls();
         }
         else if (Input.GetKeyDown(KeyCode.Escape))
         {
