@@ -11,6 +11,7 @@ public class Popup : MonoBehaviour
     public TMP_Text subtitleTextMesh;
     [Space]
     public Controls controls;
+    public AudioManager audioManager;
 
     private Action yesCallback;
     private Action noCallback;
@@ -33,18 +34,24 @@ public class Popup : MonoBehaviour
 
         yesCallback = onYes;
         noCallback = onNo;
+
+        audioManager.playSound(AudioID.UI_Popup);
     }
 
     public void yes()
     {
         yesCallback?.Invoke();
         close();
+
+        audioManager.playSound(AudioID.UI_Confirm);
     }
 
     public void no()
     {
         noCallback?.Invoke();
         close();
+
+        audioManager.playSound(AudioID.UI_Cancel);
     }
 
     private void close()

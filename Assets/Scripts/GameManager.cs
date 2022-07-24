@@ -418,6 +418,8 @@ public class GameManager : MonoBehaviour
             bDest = ballA_worldPos;
         }
 
+        audioManager.playSound(AudioID.Swap);
+
         float swapDuration = .15f;
         float swapElapsed = 0;
 
@@ -459,9 +461,11 @@ public class GameManager : MonoBehaviour
         Physics.autoSimulation = false;
 
         popup.Open("End game", "( Submit current score and return to title screen )",
-            delegate {
+            delegate
+            {
                 Physics.autoSimulation = true;
-                StartCoroutine(_animateClosing()); },
+                StartCoroutine(_animateClosing());
+            },
             delegate { isUpdating = true; Physics.autoSimulation = true; controls.setInputMode(Controls.InputModes.Game); }); ;
     }
 
@@ -509,14 +513,13 @@ public class GameManager : MonoBehaviour
     {
         GameObject newBallObject = Instantiate(ballPrefab, Vector3.up * 10 + Vector3.right * xPos, Quaternion.identity, gridParent);
         GridBall newBall = newBallObject.GetComponent<GridBall>();
-        Renderer newRenderer = newBall.GetComponent<Renderer>();
 
-        newRenderer.sharedMaterials = new Material[]
+        newBall.thisRenderer.sharedMaterials = new Material[]
         {
             outlineMat,
             ballMat
         };
-        newRenderer.materials[1].SetColor("_Color", ballColors[ballType]);
+        newBall.thisRenderer.materials[1].SetColor("_Color", ballColors[ballType]);
 
         newBall.type = ballType;
         newBall.animateCooldown = 1f;
@@ -684,6 +687,7 @@ public class GameManager : MonoBehaviour
         {
             destroyBall(centerBall);
             score += 10;
+            audioManager.playSound(AudioID.Match);
         }
     }
 
@@ -721,7 +725,10 @@ public class GameManager : MonoBehaviour
         }
 
         if (gameFinished)
+        {
+            audioManager.playSound(AudioID.Bell);
             StartCoroutine(_animateClosing());
+        }
     }
 
     private IEnumerator _animateClosing()
@@ -730,12 +737,16 @@ public class GameManager : MonoBehaviour
         selector.gameObject.SetActive(false);
         audioManager.musicSpeed(.9f);
 
+        foreach (var ball in allBalls)
+            LeanTween.value(1, 0, .75f).setEaseOutCirc().setOnUpdate(delegate (float value) { ball.thisRenderer.materials[1].SetFloat("_Flash", value); });
+
         yield return new WaitForSeconds(1);
 
         titleScreen.thisAnimator.Play("GameOver");
-
+        
         while (allBalls.Count > 0)
         {
+            audioManager.playSound(AudioID.Bounce);
             destroyBall(allBalls[allBalls.Count - 1], 10);
 
             for (int f = 0; f < 4; f++)
@@ -743,7 +754,7 @@ public class GameManager : MonoBehaviour
         }
 
         while (titleScreen.thisAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
-                yield return 0;
+            yield return 0;
 
         yield return new WaitForSeconds(2);
 

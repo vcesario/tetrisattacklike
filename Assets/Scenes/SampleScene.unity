@@ -3398,6 +3398,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thisRigidbody: {fileID: 1208394942}
   thisCollider: {fileID: 1208394943}
+  thisRenderer: {fileID: 1208394944}
   textPause: {fileID: 340607204}
   animateCooldown: 0
   type: 0
@@ -4401,18 +4402,49 @@ MonoBehaviour:
   - {fileID: 2112597870}
   - {fileID: 745182770}
   audioItems:
-  - id: 0
+  - name: Empty
+    id: 0
     clips: []
-  - id: 1
+  - name: Slash
+    id: 1
     clips:
     - {fileID: 8300000, guid: 7c234c0af57f6ae4a9c768ee13d3a8c3, type: 3}
-  - id: 2
+  - name: Bounce
+    id: 2
     clips:
     - {fileID: 8300000, guid: 5453b9ba5d8fa5d468bb4dd00052085e, type: 3}
     - {fileID: 8300000, guid: 2ed13245d86318d4783025e44a01d7a7, type: 3}
     - {fileID: 8300000, guid: 0038546434fd86041944cc35e3e00b86, type: 3}
     - {fileID: 8300000, guid: 55a791ea00dbadd4988e518e77cf6d2d, type: 3}
     - {fileID: 8300000, guid: 813bcd93dd42fea45acf17612b0b2721, type: 3}
+  - name: UI_Popup
+    id: 3
+    clips:
+    - {fileID: 8300000, guid: eec63bfafcb15164b89c36a3ae597044, type: 3}
+  - name: UI_Confirm
+    id: 4
+    clips:
+    - {fileID: 8300000, guid: cdc1f41b5740e5f46b0a62416c74d5c6, type: 3}
+  - name: UI_Cancel
+    id: 5
+    clips:
+    - {fileID: 8300000, guid: ba59ebe70af97214a8f6ad71e64d22fc, type: 3}
+  - name: UI_ConfirmBig
+    id: 6
+    clips:
+    - {fileID: 8300000, guid: effa7b0d79fa9bf44b5f3c4a60eaafba, type: 3}
+  - name: Match
+    id: 8
+    clips:
+    - {fileID: 8300000, guid: 56e65616d26b8a64e824929dedfb5a58, type: 3}
+  - name: Bell
+    id: 7
+    clips:
+    - {fileID: 8300000, guid: 4ed607ac8ae5f674fb3cea45a1761400, type: 3}
+  - name: Swap
+    id: 9
+    clips:
+    - {fileID: 8300000, guid: 5f0f8502d24e55a4fba9d302223ae064, type: 3}
 --- !u!4 &1717045535
 Transform:
   m_ObjectHideFlags: 0
@@ -4705,6 +4737,7 @@ MonoBehaviour:
   titleTextMesh: {fileID: 358706542}
   subtitleTextMesh: {fileID: 442607325}
   controls: {fileID: 30575707}
+  audioManager: {fileID: 1717045534}
 --- !u!4 &2081639206
 Transform:
   m_ObjectHideFlags: 0

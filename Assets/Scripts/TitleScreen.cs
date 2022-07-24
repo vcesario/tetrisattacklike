@@ -44,7 +44,9 @@ public class TitleScreen : MonoBehaviour
         thisAnimator.Play("InGame");
         gameManager.resetGrid();
         controls.setInputMode(Controls.InputModes.Game);
-        audioManager.musicSpeed(1f);
+        audioManager.musicSpeed(1f, .25f);
+
+        audioManager.playSound(AudioID.UI_ConfirmBig);
     }
 
     public void exitGame()

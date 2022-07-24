@@ -20,6 +20,14 @@ public class AudioManager : MonoBehaviour
             bounceCooldown -= Time.deltaTime;
     }
 
+    private void OnValidate()
+    {
+        for (int k = 0; k < audioItems.Count; k++)
+        {
+            audioItems[k].name = audioItems[k].id.ToString();
+        }
+    }
+
     public void playMusic(bool reset, bool fast)
     {
         if (reset)
@@ -30,7 +38,11 @@ public class AudioManager : MonoBehaviour
 
     public void musicSpeed(float to)
     {
-        LeanTween.value(musicSource.pitch, to, 1f).setOnUpdate(delegate (float value)
+        musicSpeed(to, 1);
+    }
+    public void musicSpeed(float to, float duration)
+    {
+        LeanTween.value(musicSource.pitch, to, duration).setOnUpdate(delegate (float value)
         {
             musicSource.pitch = value;
         });
@@ -64,13 +76,13 @@ public class AudioManager : MonoBehaviour
         soundSources[soundSourceIndex].clip = item.clips[randomClipIndex];
         soundSources[soundSourceIndex].Play();
         soundSourceIndex = (soundSourceIndex + 1) % soundSources.Count;
-
     }
 }
 
 [System.Serializable]
 public class AudioItem
 {
+    public string name;
     public AudioID id;
     public AudioClip[] clips;
 }
@@ -80,5 +92,12 @@ public enum AudioID
     Empty = 0,
     Slash = 1,
     Bounce = 2,
+    UI_Popup = 3,
+    UI_Confirm = 4,
+    UI_Cancel = 5,
+    UI_ConfirmBig = 6,
+    Bell = 7,
+    Match = 8,
+    Swap = 9,
 }
 

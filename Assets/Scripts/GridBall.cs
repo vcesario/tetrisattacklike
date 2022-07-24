@@ -6,6 +6,7 @@ public class GridBall : MonoBehaviour
 {
     public Rigidbody thisRigidbody;
     public Collider thisCollider;
+    public MeshRenderer thisRenderer;
 
     public GameObject textPause;
 
