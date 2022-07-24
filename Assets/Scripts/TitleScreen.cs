@@ -65,9 +65,7 @@ public class TitleScreen : MonoBehaviour
     }
     private IEnumerator _playOpenSequence()
     {
-        thisAnimator.Play("Title");
         controls.setInputMode(Controls.InputModes.Title);
-
         isAnimating = true;
         titleControlsTextMesh.gameObject.SetActive(false);
 
@@ -98,9 +96,19 @@ public class TitleScreen : MonoBehaviour
                 lastScoreTextMesh.transform.rotation = Quaternion.Euler(90, 0, 0);
                 bestScoreTextMesh.transform.rotation = Quaternion.Euler(90, 0, 0);
             }
+
+            // toco animacao de abertura do jogo
+            thisAnimator.Play("FirstTitle");
+            while (thisAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
+                yield return 0;
         }
         else
         {
+            // toco animacao de voltando a tela de titulo
+            thisAnimator.Play("Title");
+            while (thisAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1)
+                yield return 0;
+
             // caso seja a segunda vez em diante, significa que joguei
             if (PlayerPrefs.HasKey("lastScore"))
             {
