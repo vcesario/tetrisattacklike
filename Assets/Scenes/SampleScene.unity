@@ -1732,7 +1732,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Are you sure?
 
-    <style=c4>Y</style>es          <style=c4>N</style>o'
+    <style=c4>Y</style> Yes          <style=c4>N</style>
+    No'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 3865f950e13f49e4e8a80b148fad4f99, type: 2}
   m_sharedMaterial: {fileID: -6895365538001553429, guid: 3865f950e13f49e4e8a80b148fad4f99,

@@ -85,9 +85,6 @@ public class GameManager : MonoBehaviour
      */
     private void FixedUpdate()
     {
-        if (!isUpdating)
-            return;
-
         bool ballChangedState = false;
 
         for (int k = 0; k < allBalls.Count; k++)
@@ -95,12 +92,14 @@ public class GameManager : MonoBehaviour
             if (allBalls[k] == null)
                 continue;
 
-            if (allBalls[k].thisRigidbody.velocity.sqrMagnitude > .001f)
+            float sqrMag = allBalls[k].thisRigidbody.velocity.sqrMagnitude;
+
+            if (sqrMag > .001f)
             {
                 if (allBalls[k].animateCooldown <= 0f) // se acabou de comecar a animar
                 {
-                    if (!allBalls[k].textPause.activeSelf)
-                        allBalls[k].textPause.SetActive(true);
+                    //if (!allBalls[k].textPause.activeSelf)
+                    //    allBalls[k].textPause.SetActive(true);
 
                     ballChangedState = true;
                 }
@@ -111,7 +110,8 @@ public class GameManager : MonoBehaviour
                 if (allBalls[k].goingDown && Mathf.Sign(allBalls[k].thisRigidbody.velocity.y) == 1)
                 {
                     allBalls[k].goingDown = false;
-                    audioManager.playSound(AudioID.Bounce);
+                    if (sqrMag > 1)
+                        audioManager.playSound(AudioID.Bounce);
                 }
                 else if (!allBalls[k].goingDown && Mathf.Sign(allBalls[k].thisRigidbody.velocity.y) == -1)
                 {
@@ -120,7 +120,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                if (allBalls[k].animateCooldown > 0f)
+                if (isUpdating && allBalls[k].animateCooldown > 0f)
                 {
                     allBalls[k].animateCooldown -= Time.deltaTime;
                     if (allBalls[k].animateCooldown <= 0f) // se acabou de parar
@@ -137,7 +137,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (ballChangedState)
+        if (isUpdating && ballChangedState)
             updateSelectorGraphics();
     }
     #endregion
